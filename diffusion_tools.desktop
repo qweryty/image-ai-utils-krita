@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Service
+ServiceTypes=Krita/PythonPlugin
+X-KDE-Library=diffusion_tools
+X-Python-2-Compatible=false
+X-Krita-Manual=Manual.html
+Name=Diffusion Tools
+Comment=AI tools based on stable diffusion
