@@ -2,7 +2,7 @@ from enum import Enum
 from typing import Optional
 
 from PyQt5 import uic
-from PyQt5.QtCore import QRect, QSize
+from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
 from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy
 
@@ -95,27 +95,32 @@ class DiffusionDialog(QDialog):
             request_data['aspect_ratio'] = aspect_ratio
             # TODO async or separate thread
             self._result_images = diffusion_client.text_to_image(**request_data)
+        elif self._mode == DiffusionMode.IMAGE_TO_IMAGE:
+            request_data['strength'] = self.strength_double_spin_box.value()
+            request_data['source_image'] = self._source_image
+            self._result_images = diffusion_client.image_to_image(**request_data)
+        else:
+            return
 
-            # Data gets corrupted if we do it in one go or don't save
-            self._imageqt = [ImageQt(image) for image in self._result_images]
-            pixmaps = [QPixmap.fromImage(image) for image in self._imageqt]
+        # Data gets corrupted if we do it in one go or don't save
+        self._imageqt = [ImageQt(image) for image in self._result_images]
+        pixmaps = [QPixmap.fromImage(image) for image in self._imageqt]
 
-            layout = self.images_grid_layout
-            for i in reversed(range(layout.count())):
-                item = layout.itemAt(i)
-                layout.removeItem(item)
-                current_widget = item.widget()
-                if current_widget:
-                    current_widget.setParent(None)
+        layout = self.images_grid_layout
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+            layout.removeItem(item)
+            current_widget = item.widget()
+            if current_widget:
+                current_widget.setParent(None)
 
-            self._image_selection = [False] * len(self._result_images)
-            self.upscale_selected_button.setEnabled(False)
-            self.apply_button.setEnabled(False)
-
-            for i, pixmap in enumerate(pixmaps):
-                button = ImageSelectButton(pixmap)
-                button.toggled.connect(self._get_toggle_image_slot(i))
-                layout.addWidget(button, i // self._columns, i % self._columns)
+        self._image_selection = [False] * len(self._result_images)
+        self.upscale_selected_button.setEnabled(False)
+        self.apply_button.setEnabled(False)
+        for i, pixmap in enumerate(pixmaps):
+            button = ImageSelectButton(pixmap)
+            button.toggled.connect(self._get_toggle_image_slot(i))
+            layout.addWidget(button, i // self._columns, i % self._columns)
 
     def _get_toggle_image_slot(self, i: int):
         def _toggle(checked: bool):
@@ -128,6 +133,8 @@ class DiffusionDialog(QDialog):
 
     def set_mode(self, mode: DiffusionMode):
         self._mode = mode
+        self.strength_label.setVisible(mode != DiffusionMode.TEXT_TO_IMAGE)
+        self.strength_double_spin_box.setVisible(mode != DiffusionMode.TEXT_TO_IMAGE)
 
     def set_target_size(self, width, height):
         self._target_width = width

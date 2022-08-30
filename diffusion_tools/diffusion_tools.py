@@ -69,7 +69,7 @@ class DiffusionToolsDockWidget(DockWidget):
         # TODO get selection if any
         pixel_bytes = current_layer.pixelData(0, 0, width, height)  # BGRA pixels
         # TODO support other formats than rgba
-        image = Image.frombytes('RGBA', (width, height), io.BytesIO(pixel_bytes), 'raw', 'BGRA')
+        image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
         self.diffusion_dialog.set_source_image(image)
 
         self.diffusion_dialog.set_mode(DiffusionMode.IMAGE_TO_IMAGE)
