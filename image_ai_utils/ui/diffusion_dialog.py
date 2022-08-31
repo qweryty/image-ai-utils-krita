@@ -75,9 +75,40 @@ class DiffusionDialog(QDialog):
     def set_mask(self, mask: Image.Image):
         self._mask = mask
 
+    def _update_buttons(self):
+        layout = self.images_grid_layout
+        # Removing old buttons
+        for i in reversed(range(layout.count())):
+            item = layout.itemAt(i)
+            layout.removeItem(item)
+            current_widget = item.widget()
+            if current_widget:
+                current_widget.setParent(None)
+
+        # Data gets corrupted if we do it in one go or don't save
+        self._imageqt = [ImageQt(image) for image in self._result_images]
+        pixmaps = [QPixmap.fromImage(image) for image in self._imageqt]
+
+        self._image_selection = [False] * len(self._result_images)
+        self.upscale_selected_button.setEnabled(False)
+        self.apply_button.setEnabled(False)
+        for i, pixmap in enumerate(pixmaps):
+            button = ImageSelectButton(pixmap)
+            button.toggled.connect(self._get_toggle_image_slot(i))
+            layout.addWidget(button, i // self._columns, i % self._columns)
+
     def upscale(self):
+        selected_id = self._image_selection.index(True)
+        self.upscale_dialog.set_upscaling_params(
+            source_image=self._result_images[selected_id],
+            target_width=self._target_width,
+            target_height=self._target_height
+        )
         if not self.upscale_dialog.exec():
             return
+
+        self._result_images[selected_id] = self.upscale_dialog.result_image
+        self._update_buttons()
 
     def apply(self):
         self.accept()
@@ -110,32 +141,13 @@ class DiffusionDialog(QDialog):
         else:
             return
 
-        # Data gets corrupted if we do it in one go or don't save
-        self._imageqt = [ImageQt(image) for image in self._result_images]
-        pixmaps = [QPixmap.fromImage(image) for image in self._imageqt]
-
-        layout = self.images_grid_layout
-        for i in reversed(range(layout.count())):
-            item = layout.itemAt(i)
-            layout.removeItem(item)
-            current_widget = item.widget()
-            if current_widget:
-                current_widget.setParent(None)
-
-        self._image_selection = [False] * len(self._result_images)
-        self.upscale_selected_button.setEnabled(False)
-        self.apply_button.setEnabled(False)
-        for i, pixmap in enumerate(pixmaps):
-            button = ImageSelectButton(pixmap)
-            button.toggled.connect(self._get_toggle_image_slot(i))
-            layout.addWidget(button, i // self._columns, i % self._columns)
+        self._update_buttons()
 
     def _get_toggle_image_slot(self, i: int):
         def _toggle(checked: bool):
             self._image_selection[i] = checked
-            any_selected = any(self._image_selection)
-            self.upscale_selected_button.setEnabled(any_selected)
-            self.apply_button.setEnabled(any_selected)
+            self.upscale_selected_button.setEnabled(sum(self._image_selection) == 1)
+            self.apply_button.setEnabled(any(self._image_selection))
 
         return _toggle
 

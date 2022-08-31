@@ -70,7 +70,6 @@ class DiffusionClient:
             headers=self._default_headers,
             timeout=None
         )
-        print(response)
         return [base64url_to_image(image.encode()) for image in response.json()['images']]
 
     def inpaint(
@@ -103,8 +102,27 @@ class DiffusionClient:
             headers=self._default_headers,
             timeout=None
         )
-        print(response)
         return [base64url_to_image(image.encode()) for image in response.json()['images']]
+
+    def upscale(
+            self,
+            source_image: Image.Image,
+            target_width: int,
+            target_height: int
+    ) -> Image.Image:
+        request_data = {
+            'image': image_to_base64url(source_image).decode(),
+            'target_width': target_width,
+            'target_height': target_height,
+        }
+
+        response = httpx.post(
+            self._base_url + 'upscale',
+            json=request_data,
+            headers=self._default_headers,
+            timeout=None
+        )
+        return base64url_to_image(response.json()['image'].encode())
 
 
 diffusion_client = DiffusionClient(os.environ.get('AI_IMAGE_UTILS_URL', 'http://localhost:8000/'))
