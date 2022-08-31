@@ -2,5 +2,5 @@
 __pycache__
 .venv
 krita.py
-diffusion_tools/libs
+image_ai_utils/libs
 .env

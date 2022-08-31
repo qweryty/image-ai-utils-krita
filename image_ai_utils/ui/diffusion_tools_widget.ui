@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="0" column="1">
-    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0">
      <item>
       <layout class="QGridLayout" name="gridLayout_2">
        <item row="0" column="0">
@@ -25,27 +25,13 @@
          </property>
         </widget>
        </item>
-       <item row="0" column="1">
-        <widget class="QPushButton" name="image_to_image_button">
-         <property name="text">
-          <string>Img2Img</string>
-         </property>
-        </widget>
-       </item>
-       <item row="0" column="2">
-        <widget class="QPushButton" name="inpaint_button">
-         <property name="text">
-          <string>Inpaint</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QPushButton" name="upscale_button">
+       <item row="1" column="2">
+        <widget class="QPushButton" name="make_tilable_button">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Upscale</string>
+          <string>Make Tilable</string>
          </property>
         </widget>
        </item>
@@ -59,13 +45,37 @@
          </property>
         </widget>
        </item>
-       <item row="1" column="2">
-        <widget class="QPushButton" name="make_tilable_button">
+       <item row="0" column="2">
+        <widget class="QPushButton" name="inpaint_button">
+         <property name="text">
+          <string>Inpaint</string>
+         </property>
+        </widget>
+       </item>
+       <item row="0" column="1">
+        <widget class="QPushButton" name="image_to_image_button">
+         <property name="text">
+          <string>Img2Img</string>
+         </property>
+        </widget>
+       </item>
+       <item row="1" column="0">
+        <widget class="QPushButton" name="upscale_button">
          <property name="enabled">
           <bool>false</bool>
          </property>
          <property name="text">
-          <string>Make Tilable</string>
+          <string>Upscale</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="2">
+        <widget class="QPushButton" name="settings_button">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>Settings</string>
          </property>
         </widget>
        </item>
@@ -83,6 +93,23 @@
         </size>
        </property>
       </spacer>
+     </item>
+     <item>
+      <layout class="QGridLayout" name="gridLayout_3">
+       <item row="1" column="0">
+        <widget class="QPushButton" name="quick_mask_button">
+         <property name="enabled">
+          <bool>false</bool>
+         </property>
+         <property name="toolTip">
+          <string>Creates transparency mask for current layer</string>
+         </property>
+         <property name="text">
+          <string>Quick Mask</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
      </item>
     </layout>
    </item>
