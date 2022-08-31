@@ -26,11 +26,20 @@ class DiffusionToolsDockWidget(DockWidget):
         self.upscale_dialog = UpscaleDialog()
         self.diffusion_dialog = DiffusionDialog()
 
-    def insert_layers_from_diffusion(self):
+    def insert_layers_from_diffusion(self, below: bool = False):
         current_document = Krita.instance().activeDocument()
         x, y, width, height = self._get_document_selection(current_document)
         current_node = current_document.activeNode()
         parent = current_node.parentNode()
+
+        if below:
+            children = parent.childNodes()
+            current_index = children.index(current_node) - 1
+            if current_index >= 0:
+                current_node = children[current_index]
+            else:
+                current_node = None
+
         for i, image in enumerate(self.diffusion_dialog.result_images):
             new_node = current_document.createNode(f'diffusion {i}', 'paintLayer')
             pixel_bytes = image.convert('RGBA').resize((width, height)).tobytes('raw', 'BGRA')
@@ -110,7 +119,7 @@ class DiffusionToolsDockWidget(DockWidget):
         if not self.diffusion_dialog.exec():
             return
 
-        self.insert_layers_from_diffusion()
+        self.insert_layers_from_diffusion(below=True)
 
     def upscale(self):
         current_document = Krita.instance().activeDocument()
