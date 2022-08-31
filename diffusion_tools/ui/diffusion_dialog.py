@@ -60,17 +60,20 @@ class DiffusionDialog(QDialog):
         )
         self.upscale_dialog = UpscaleDialog()
         self._columns = 2  # TODO change dynamically
-        self._source_images = []
         self._result_images = []
         self._image_selection = []
         self._target_width = 512
         self._target_height = 512
         self._mode: Optional[DiffusionMode] = None
         self._source_image: Optional[Image.Image] = None
+        self._mask: Optional[Image.Image] = None
         self._imageqt = None
 
     def set_source_image(self, source_image: Image.Image):
         self._source_image = source_image
+
+    def set_mask(self, mask: Image.Image):
+        self._mask = mask
 
     def upscale(self):
         if not self.upscale_dialog.exec():
@@ -99,6 +102,11 @@ class DiffusionDialog(QDialog):
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
             self._result_images = diffusion_client.image_to_image(**request_data)
+        elif self._mode == DiffusionMode.INPAINT:
+            request_data['strength'] = self.strength_double_spin_box.value()
+            request_data['source_image'] = self._source_image
+            request_data['mask'] = self._mask
+            self._result_images = diffusion_client.inpaint(**request_data)
         else:
             return
 

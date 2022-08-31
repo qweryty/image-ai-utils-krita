@@ -1,10 +1,10 @@
 import io
 
-from PIL import Image
+from PIL import Image, ImageOps
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
 
-from krita import Extension, DockWidget, Krita
+from krita import Extension, DockWidget, Krita, Document, Node
 from .ui.diffusion_dialog import DiffusionMode, DiffusionDialog
 from .ui.upscale_dialog import UpscaleDialog
 from .ui.utils import get_ui_file_path
@@ -28,26 +28,30 @@ class DiffusionToolsDockWidget(DockWidget):
 
     def insert_layers_from_diffusion(self):
         current_document = Krita.instance().activeDocument()
-        # TODO selection if any
-        width = current_document.width()
-        height = current_document.height()
+        x, y, width, height = self._get_document_selection(current_document)
         current_node = current_document.activeNode()
         parent = current_node.parentNode()
         for i, image in enumerate(self.diffusion_dialog.result_images):
             new_node = current_document.createNode(f'diffusion {i}', 'paintLayer')
             pixel_bytes = image.convert('RGBA').resize((width, height)).tobytes('raw', 'BGRA')
-            new_node.setPixelData(pixel_bytes, 0, 0, width, height)
+            new_node.setPixelData(pixel_bytes, x, y, width, height)
             parent.addChildNode(new_node, current_node)
 
         current_document.refreshProjection()
+
+    def _get_document_selection(self, document: Document):
+        selection = document.selection()
+        if selection is not None:
+            return selection.x(), selection.y(), selection.width(), selection.height()
+        else:
+            return 0, 0, document.width(), document.height()
 
     def text_to_image(self):
         current_document = Krita.instance().activeDocument()
         if not current_document:
             return
 
-        width = current_document.width()
-        height = current_document.height()
+        _, _, width, height = self._get_document_selection(current_document)
         self.diffusion_dialog.set_target_size(width, height)
 
         self.diffusion_dialog.set_mode(DiffusionMode.TEXT_TO_IMAGE)
@@ -61,13 +65,12 @@ class DiffusionToolsDockWidget(DockWidget):
         if not current_document:
             return
 
-        width = current_document.width()
-        height = current_document.height()
+        x, y, width, height = self._get_document_selection(current_document)
+
         self.diffusion_dialog.set_target_size(width, height)
 
         current_layer = current_document.activeNode()
-        # TODO get selection if any
-        pixel_bytes = current_layer.pixelData(0, 0, width, height)  # BGRA pixels
+        pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
         # TODO support other formats than rgba
         image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
         self.diffusion_dialog.set_source_image(image)
@@ -83,8 +86,28 @@ class DiffusionToolsDockWidget(DockWidget):
         if not current_document:
             return
 
+        x, y, width, height = self._get_document_selection(current_document)
+
+        self.diffusion_dialog.set_target_size(width, height)
+
+        current_layer = current_document.activeNode()
+        pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
+        # TODO support other formats than rgba
+        image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
+        self.diffusion_dialog.set_source_image(image)
+        for layer in current_layer.childNodes():
+            if layer.type() == 'transparencymask':
+                mask = layer
+                break
+        else:
+            return
+
+        mask_pixel_bytes = mask.pixelData(x, y, width, height)  # BGRA pixels
+        mask_image = Image.frombytes('L', (width, height), mask_pixel_bytes, 'raw')
+        self.diffusion_dialog.set_mask(ImageOps.invert(mask_image))
+
         self.diffusion_dialog.set_mode(DiffusionMode.INPAINT)
-        if self.diffusion_dialog.exec():
+        if not self.diffusion_dialog.exec():
             return
 
         self.insert_layers_from_diffusion()
