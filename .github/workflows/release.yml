@@ -21,7 +21,8 @@ jobs:
           cp -r image_ai_utils build
           cp image_ai_utils.desktop build
           python3.9 -m pip install -r requirements.txt -t build/image_ai_utils/libs
-          zip -r image_ai_utils_linux.zip build/
+          cd build
+          zip -r ../image_ai_utils_linux.zip .
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
