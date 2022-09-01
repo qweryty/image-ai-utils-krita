@@ -1,15 +1,23 @@
 import os
 import sys
-print(
-    os.path.abspath(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), 'libs')
+import subprocess
+
+current_path = os.path.dirname(os.path.realpath(__file__))
+libs_path = os.path.abspath(os.path.join(current_path, 'libs'))
+# Installing dependencies
+if not os.path.isdir(libs_path):
+    subprocess.run([sys.executable, '-m', 'ensurepip'], check=True)
+    subprocess.run(
+        [
+            sys.executable, '-m',
+            'pip', 'install',
+            '-r', os.path.abspath(os.path.join(current_path, 'requirements.txt')),
+            '-t', libs_path
+        ],
+        check=True
     )
-)
-sys.path.append(
-    os.path.abspath(
-        os.path.join(os.path.dirname(os.path.realpath(__file__)), 'libs')
-    )
-)
+
+sys.path.append(libs_path)
 
 from .diffusion_tools import DiffusionToolsExtension, DiffusionToolsDockWidget
 from krita import DockWidgetFactory, DockWidgetFactoryBase

@@ -9,20 +9,18 @@ on:
   workflow_dispatch:
 
 jobs:
-  release-linux:
-    name: "Release Linux"
+  release:
+    name: "Release"
     runs-on: ubuntu-latest
     steps:
       - uses: "actions/checkout@v3"
       - name: build
         run: |
-          sudo apt-get install python3.9
           mkdir build
           cp -r image_ai_utils build
           cp image_ai_utils.desktop build
-          python3.9 -m pip install -r requirements.txt -t build/image_ai_utils/libs
           cd build
-          zip -r ../image_ai_utils_linux.zip .
+          zip -r ../image_ai_utils.zip .
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
