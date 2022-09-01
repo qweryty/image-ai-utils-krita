@@ -1,0 +1,31 @@
+name: Release
+
+on:
+  # Triggers the workflow on push or pull request events but only for the "master" branch
+  push:
+    tags:
+      - "v*"
+
+  workflow_dispatch:
+
+jobs:
+  release-linux:
+    name: "Release Linux"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: "actions/checkout@v3"
+      - name: zip
+        run: |
+          apt install python3.9
+          mkdir build
+          cp -r image_ai_utils build
+          cp image_ai_utils.desktop build
+          python3.9 -m pip install -r requirements.txt -t build/image_ai_utils/libs
+          zip -r image_ai_utils_linux.zip build/
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+          draft: true
+          files: |
+            *.zip
