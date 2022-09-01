@@ -54,14 +54,14 @@
        <item>
         <layout class="QFormLayout" name="formLayout">
          <item row="1" column="0">
-          <widget class="QLabel" name="label">
+          <widget class="QLabel" name="use_realesrgan_label">
            <property name="text">
             <string>Use RealESRGAN:</string>
            </property>
           </widget>
          </item>
          <item row="3" column="0">
-          <widget class="QLabel" name="label_2">
+          <widget class="QLabel" name="init_strength_label">
            <property name="text">
             <string>Init Strength:</string>
            </property>
@@ -146,7 +146,18 @@
           </widget>
          </item>
          <item row="0" column="1">
-          <widget class="QComboBox" name="upscale_mode_combo_box"/>
+          <widget class="QComboBox" name="upscale_mode_combo_box">
+           <item>
+            <property name="text">
+             <string>RealESRGAN</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>GoBIG</string>
+            </property>
+           </item>
+          </widget>
          </item>
         </layout>
        </item>
@@ -191,12 +202,28 @@
    <slot>upscale()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>580</x>
-     <y>62</y>
+     <x>772</x>
+     <y>40</y>
     </hint>
     <hint type="destinationlabel">
      <x>563</x>
      <y>66</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>upscale_mode_combo_box</sender>
+   <signal>currentIndexChanged(int)</signal>
+   <receiver>Dialog</receiver>
+   <slot>change_mode(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>736</x>
+     <y>63</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>780</x>
+     <y>111</y>
     </hint>
    </hints>
   </connection>
@@ -205,5 +232,6 @@
   <slot>gobig()</slot>
   <slot>upscale()</slot>
   <slot>apply()</slot>
+  <slot>change_mode(int)</slot>
  </slots>
 </ui>
