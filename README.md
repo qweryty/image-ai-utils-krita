@@ -14,7 +14,7 @@
 
 ## Installation
 - Install server from [here](https://github.com/qweryty/image-ai-utils-server)
-- Download the latest `image_ai_utils.zip`(`image_ai_utils_windows_krita510.zip` for Windows) from [releases](https://github.com/qweryty/image-ai-utils-krita/releases) page
+- Download the latest `image_ai_utils.zip`(`image_ai_utils_windows_krita510.zip` for Windows, requires Krita 5.1.0) from [releases](https://github.com/qweryty/image-ai-utils-krita/releases) page
 - Follow the [official manual](https://docs.krita.org/en/user_manual/python_scripting/install_custom_python_plugin.html) to install plugin
 - The first Krita restart may be slower than usual because the plugin needs to install it's dependencies
 - Before you can use the plugin, you should setup server credentials first.
