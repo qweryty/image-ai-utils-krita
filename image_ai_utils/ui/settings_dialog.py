@@ -3,9 +3,9 @@ import json
 from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QLineEdit, QMessageBox
 
-from .. import settings
-from ..client import DiffusionClient
+from ..client import ImageAIUtilsClient
 from .utils import get_ui_file_path
+from ..settings import Settings, SETTINGS_PATH
 
 
 class SettingsDialog(QDialog):
@@ -18,15 +18,15 @@ class SettingsDialog(QDialog):
         uic.loadUi(get_ui_file_path('settings_dialog.ui'), self)
 
     def init_fields(self):
-        if settings.settings is None:
+        if Settings.settings() is None:
             return
 
-        self.url_line_edit.setText(settings.settings.SERVER_URL)
-        self.username_line_edit.setText(settings.settings.USERNAME)
-        self.password_line_edit.setText(settings.settings.PASSWORD)
+        self.url_line_edit.setText(Settings.settings().SERVER_URL)
+        self.username_line_edit.setText(Settings.settings().USERNAME)
+        self.password_line_edit.setText(Settings.settings().PASSWORD)
 
     def test_connection(self):
-        client = DiffusionClient(
+        client = ImageAIUtilsClient(
             base_url=self.url_line_edit.text(),
             username=self.username_line_edit.text(),
             password=self.password_line_edit.text()
@@ -48,7 +48,7 @@ class SettingsDialog(QDialog):
             message_box.exec()
 
     def save(self):
-        with open(settings.SETTINGS_PATH, 'w') as f:
+        with open(SETTINGS_PATH, 'w') as f:
             json.dump(
                 {
                     'SERVER_URL': self.url_line_edit.text(),
@@ -60,6 +60,6 @@ class SettingsDialog(QDialog):
 
     def apply(self):
         self.save()
-        settings.init_settings()
+        Settings.settings()
         self.accept()
 

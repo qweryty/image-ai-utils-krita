@@ -1,11 +1,9 @@
-import io
-
-from PIL import Image, ImageOps
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
 
-from krita import Extension, DockWidget, Krita, Document, Node
-from . import settings
+from PIL import Image, ImageOps
+from krita import Extension, DockWidget, Krita, Document
+from .settings import Settings
 from .ui.diffusion_dialog import DiffusionMode, DiffusionDialog
 from .ui.settings_dialog import SettingsDialog
 from .ui.upscale_dialog import UpscaleDialog
@@ -31,7 +29,7 @@ class DiffusionToolsDockWidget(DockWidget):
         ]
 
         for widget in self._depend_on_settings:
-            widget.setEnabled(settings.settings is not None)
+            widget.setEnabled(Settings.settings() is not None)
 
         self.setWidget(self.main_widget)
 

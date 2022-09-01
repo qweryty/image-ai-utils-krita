@@ -1,14 +1,13 @@
-import os
 from typing import Optional, List, Tuple
 
 import httpx
 from PIL import Image
-from . import settings
+from .settings import Settings
 from .ui.utils import base64url_to_image, image_to_base64url
 
 
 # TODO check response code and throw custom exception
-class DiffusionClient:
+class ImageAIUtilsClient:
     def __init__(self, base_url: str, username: str, password: str):
         if not base_url.endswith('/'):
             base_url += '/'
@@ -145,18 +144,20 @@ class DiffusionClient:
         except Exception as e:
             return False, f'Exception: {type(e)}'
 
+    _client = None
 
-diffusion_client: Optional[DiffusionClient] = None
+    @classmethod
+    def client(cls):
+        if cls._client is not None:
+            return cls._client
 
+        if Settings.settings() is None:
+            return None
 
-def init_client():
-    if settings.settings is None:
-        return
+        cls._client = ImageAIUtilsClient(
+            base_url=Settings.settings().SERVER_URL,
+            username=Settings.settings().USERNAME,
+            password=Settings.settings().PASSWORD
+        )
 
-    global diffusion_client
-    diffusion_client = DiffusionClient(
-        base_url=settings.settings.SERVER_URL, username=settings.settings.USERNAME, password=settings.settings.PASSWORD
-    )
-
-
-init_client()
+        return cls._client

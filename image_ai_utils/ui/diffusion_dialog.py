@@ -10,7 +10,7 @@ from PIL import Image
 from PIL.ImageQt import ImageQt
 from .upscale_dialog import UpscaleDialog
 from .utils import get_ui_file_path
-from ..client import diffusion_client
+from ..client import ImageAIUtilsClient
 
 
 class ImageSelectButton(QPushButton):
@@ -131,16 +131,16 @@ class DiffusionDialog(QDialog):
             aspect_ratio = self._target_width / self._target_height
             request_data['aspect_ratio'] = aspect_ratio
             # TODO async or separate thread
-            self._result_images = diffusion_client.text_to_image(**request_data)
+            self._result_images = ImageAIUtilsClient.client().text_to_image(**request_data)
         elif self._mode == DiffusionMode.IMAGE_TO_IMAGE:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
-            self._result_images = diffusion_client.image_to_image(**request_data)
+            self._result_images = ImageAIUtilsClient.client().image_to_image(**request_data)
         elif self._mode == DiffusionMode.INPAINT:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
             request_data['mask'] = self._mask
-            self._result_images = diffusion_client.inpaint(**request_data)
+            self._result_images = ImageAIUtilsClient.client().inpaint(**request_data)
         else:
             return
 

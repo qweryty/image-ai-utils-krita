@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QSpinBox, QLabel, QPushButton, QWidget, QCh
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from .utils import get_ui_file_path
-from ..client import diffusion_client
+from ..client import ImageAIUtilsClient
 
 
 class UpscaleDialog(QDialog):
@@ -63,7 +63,7 @@ class UpscaleDialog(QDialog):
         self.apply_button.setEnabled(True)
 
     def upscale(self):
-        self._result_image = diffusion_client.upscale(
+        self._result_image = ImageAIUtilsClient.client().upscale(
             source_image=self._source_image,
             target_width=self.target_width_spin_box.value(),
             target_height=self.target_height_spin_box.value(),

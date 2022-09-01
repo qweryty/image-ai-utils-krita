@@ -18,6 +18,20 @@ class Settings(BaseSettings):
     PASSWORD: str = Field(...)
     SERVER_URL: str = Field('http://localhost:8000/')
 
+    _settings = None
+
+    @classmethod
+    def settings(cls):
+        if cls._settings is not None:
+            return cls._settings
+
+        if not os.path.isfile(SETTINGS_PATH):
+            return None
+
+        with open(SETTINGS_PATH, 'r') as f:
+            cls._settings = Settings(**json.load(f))
+        return cls._settings
+
 
 settings: Optional[Settings] = None
 
@@ -32,4 +46,4 @@ def init_settings():
     return True
 
 
-init_settings()
+#init_settings()
