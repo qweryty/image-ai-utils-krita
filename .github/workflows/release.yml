@@ -36,7 +36,7 @@ jobs:
           python-version: "3.8"
       - name: build
         run: |
-          xcopy /e /i image_ai_utils build/image_ai_utils 
+          xcopy /e /i image_ai_utils build\image_ai_utils 
           xcopy image_ai_utils.desktop build
           cd build
           pip install -r image_ai_utils/requirements.txt -t image_ai_utils/libs
@@ -48,6 +48,7 @@ jobs:
 
   release:
     name: "Release"
+    needs: [build-windows, build-linux]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v3
