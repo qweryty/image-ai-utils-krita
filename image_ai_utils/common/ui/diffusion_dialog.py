@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinB
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from .upscale_dialog import UpscaleDialog
-from .utils import get_ui_file_path
+from ..utils import get_ui_file_path
 from ..client import ImageAIUtilsClient
 
 

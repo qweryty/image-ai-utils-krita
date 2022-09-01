@@ -7,7 +7,7 @@ from PIL import Image
 
 
 def get_ui_file_path(filename: str):
-    return os.path.join(os.path.dirname(os.path.realpath(__file__)), filename)
+    return os.path.join(os.path.dirname(os.path.realpath(__file__)), 'ui', filename)
 
 
 def image_to_base64url(image: Image.Image, output_format: str = 'PNG') -> bytes:

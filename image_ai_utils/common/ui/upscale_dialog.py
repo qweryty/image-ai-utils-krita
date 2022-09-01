@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QDialog, QSpinBox, QLabel, QPushButton, QWidget, QCh
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
-from .utils import get_ui_file_path
+from ..utils import get_ui_file_path
 from ..client import ImageAIUtilsClient
 
 

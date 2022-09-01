@@ -3,7 +3,7 @@ from typing import Optional, List, Tuple
 import httpx
 from PIL import Image
 from .settings import Settings
-from .ui.utils import base64url_to_image, image_to_base64url
+from .utils import base64url_to_image, image_to_base64url
 
 
 # TODO check response code and throw custom exception

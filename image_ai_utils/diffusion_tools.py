@@ -3,11 +3,11 @@ from PyQt5.QtWidgets import QMessageBox
 
 from PIL import Image, ImageOps
 from krita import Extension, DockWidget, Krita, Document
-from .settings import Settings
-from .ui.diffusion_dialog import DiffusionMode, DiffusionDialog
-from .ui.settings_dialog import SettingsDialog
-from .ui.upscale_dialog import UpscaleDialog
-from .ui.utils import get_ui_file_path
+from .common.settings import Settings
+from .common.ui.diffusion_dialog import DiffusionMode, DiffusionDialog
+from .common.ui.settings_dialog import SettingsDialog
+from .common.ui.upscale_dialog import UpscaleDialog
+from .common.utils import get_ui_file_path
 
 
 class DiffusionToolsDockWidget(DockWidget):

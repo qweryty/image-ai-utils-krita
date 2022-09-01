@@ -1,7 +1,6 @@
 import json
 import os.path
 from os import environ
-from typing import Optional
 
 from pydantic import BaseSettings, Field
 
@@ -31,19 +30,3 @@ class Settings(BaseSettings):
         with open(SETTINGS_PATH, 'r') as f:
             cls._settings = Settings(**json.load(f))
         return cls._settings
-
-
-settings: Optional[Settings] = None
-
-
-def init_settings():
-    if not os.path.isfile(SETTINGS_PATH):
-        return False
-
-    global settings
-    with open(SETTINGS_PATH, 'r') as f:
-        settings = Settings(**json.load(f))
-    return True
-
-
-#init_settings()

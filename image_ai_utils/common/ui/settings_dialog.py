@@ -4,7 +4,7 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QDialog, QLineEdit, QMessageBox
 
 from ..client import ImageAIUtilsClient
-from .utils import get_ui_file_path
+from ..utils import get_ui_file_path
 from ..settings import Settings, SETTINGS_PATH
 
 
