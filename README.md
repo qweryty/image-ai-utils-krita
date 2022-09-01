@@ -21,3 +21,10 @@
 For that, press `Settings` button in addon panel and fill your server credentials there.
   - You can test the connection to server using `Test Connection` button
 If the connection was not successful, it will show you an error message, which you can use to debug your problem.
+
+## Usage tips
+- All operations work on active layer only
+- `Img2Img` and `Inpaint` operations perform badly on areas with transparency(this is considered a bug and will be fixed soon)
+- `Inpaint` works by using transparency mask
+- If the selected region is not a rectangle, its bounding box will be used
+- If there is no selected region, the operation will work on the whole image
