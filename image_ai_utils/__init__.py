@@ -1,7 +1,6 @@
 import os
 import sys
 print(
-
     os.path.abspath(
         os.path.join(os.path.dirname(os.path.realpath(__file__)), 'libs')
     )
@@ -13,10 +12,7 @@ sys.path.append(
 )
 
 from .diffusion_tools import DiffusionToolsExtension, DiffusionToolsDockWidget
-from .libs.dotenv import load_dotenv
 from krita import DockWidgetFactory, DockWidgetFactoryBase
-
-load_dotenv()
 
 Krita.instance().addExtension(DiffusionToolsExtension(Krita.instance()))
 

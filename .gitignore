@@ -4,3 +4,4 @@ __pycache__
 krita.py
 image_ai_utils/libs
 .env
+settings.json

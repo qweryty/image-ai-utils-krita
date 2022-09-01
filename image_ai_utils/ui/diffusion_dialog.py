@@ -4,7 +4,7 @@ from typing import Optional
 from PyQt5 import uic
 from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
-from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy
+from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinBox
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
@@ -52,6 +52,9 @@ class DiffusionMode(int, Enum):
 
 
 class DiffusionDialog(QDialog):
+    use_random_seed_check_box: QCheckBox
+    seed_spin_box: QSpinBox
+
     def __init__(self):
         super().__init__()
         uic.loadUi(get_ui_file_path('diffusion_dialog.ui'), self)

@@ -1,3 +1,4 @@
 pillow
-dotenv
+python-dotenv
 httpx
+pydantic

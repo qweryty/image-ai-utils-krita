@@ -1,18 +1,26 @@
 import os
-from typing import Optional, List
+from typing import Optional, List, Tuple
 
 import httpx
 from PIL import Image
+from . import settings
 from .ui.utils import base64url_to_image, image_to_base64url
 
 
 # TODO check response code and throw custom exception
 class DiffusionClient:
-    def __init__(self, base_url: str):
+    def __init__(self, base_url: str, username: str, password: str):
+        if not base_url.endswith('/'):
+            base_url += '/'
+
+        if not base_url.startswith(('http://', 'https://')):
+            base_url = 'http://' + base_url
+
         self._base_url = base_url
         self._default_headers = {
             'Accept-Encoding': 'gzip,deflate'
         }
+        self._auth = (username, password)
 
     def text_to_image(
             self,
@@ -38,7 +46,8 @@ class DiffusionClient:
             self._base_url + 'text_to_image',
             json=request_data,
             headers=self._default_headers,
-            timeout=None
+            timeout=None,
+            auth=self._auth
         )
         return [base64url_to_image(image.encode()) for image in response.json()['images']]
 
@@ -68,7 +77,8 @@ class DiffusionClient:
             self._base_url + 'image_to_image',
             json=request_data,
             headers=self._default_headers,
-            timeout=None
+            timeout=None,
+            auth=self._auth
         )
         return [base64url_to_image(image.encode()) for image in response.json()['images']]
 
@@ -100,7 +110,8 @@ class DiffusionClient:
             self._base_url + 'image_to_image',
             json=request_data,
             headers=self._default_headers,
-            timeout=None
+            timeout=None,
+            auth=self._auth
         )
         return [base64url_to_image(image.encode()) for image in response.json()['images']]
 
@@ -120,9 +131,32 @@ class DiffusionClient:
             self._base_url + 'upscale',
             json=request_data,
             headers=self._default_headers,
-            timeout=None
+            timeout=None,
+            auth=self._auth
         )
         return base64url_to_image(response.json()['image'].encode())
 
+    def test_connection(self) -> Tuple[bool, str]:
+        try:
+            response = httpx.get(
+                self._base_url + 'ping', headers=self._default_headers, auth=self._auth
+            )
+            return response.status_code == httpx.codes.OK, response.text
+        except Exception as e:
+            return False, f'Exception: {type(e)}'
 
-diffusion_client = DiffusionClient(os.environ.get('AI_IMAGE_UTILS_URL', 'http://localhost:8000/'))
+
+diffusion_client: Optional[DiffusionClient] = None
+
+
+def init_client():
+    if settings.settings is None:
+        return
+
+    global diffusion_client
+    diffusion_client = DiffusionClient(
+        base_url=settings.settings.SERVER_URL, username=settings.settings.USERNAME, password=settings.settings.PASSWORD
+    )
+
+
+init_client()

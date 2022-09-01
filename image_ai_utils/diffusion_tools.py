@@ -5,7 +5,9 @@ from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
 
 from krita import Extension, DockWidget, Krita, Document, Node
+from . import settings
 from .ui.diffusion_dialog import DiffusionMode, DiffusionDialog
+from .ui.settings_dialog import SettingsDialog
 from .ui.upscale_dialog import UpscaleDialog
 from .ui.utils import get_ui_file_path
 
@@ -20,11 +22,22 @@ class DiffusionToolsDockWidget(DockWidget):
         self.main_widget.image_to_image_button.clicked.connect(self.image_to_image)
         self.main_widget.inpaint_button.clicked.connect(self.inpaint)
         self.main_widget.upscale_button.clicked.connect(self.upscale)
+        self.main_widget.settings_button.clicked.connect(self.call_settings)
+
+        self._depend_on_settings = [
+            self.main_widget.text_to_image_button,
+            self.main_widget.image_to_image_button,
+            self.main_widget.inpaint_button,
+        ]
+
+        for widget in self._depend_on_settings:
+            widget.setEnabled(settings.settings is not None)
 
         self.setWidget(self.main_widget)
 
         self.upscale_dialog = UpscaleDialog()
         self.diffusion_dialog = DiffusionDialog()
+        self.settings_dialog = SettingsDialog()
 
     def insert_layers_from_diffusion(self, below: bool = False):
         current_document = Krita.instance().activeDocument()
@@ -129,7 +142,13 @@ class DiffusionToolsDockWidget(DockWidget):
         if not self.diffusion_dialog.exec():
             return
 
-        print('upscale')
+    def call_settings(self):
+        self.settings_dialog.init_fields()
+        if not self.settings_dialog.exec():
+            return
+
+        for widget in self._depend_on_settings:
+            widget.setEnabled(True)
 
     def canvasChanged(self, canvas: 'Canvas') -> None:
         pass
