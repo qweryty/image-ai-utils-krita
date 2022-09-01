@@ -1,4 +1,4 @@
-# Krita addon for Image AI Utils
+# Krita addon for Image AI Utils based on Stable Diffusion
 ## Features
 - Text to image
 - Image to image
