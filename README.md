@@ -28,3 +28,4 @@ If the connection was not successful, it will show you an error message, which y
 - `Inpaint` works by using transparency mask
 - If the selected region is not a rectangle, its bounding box will be used
 - If there is no selected region, the operation will work on the whole image
+- Stable Diffusion operations work MUCH faster on square images
