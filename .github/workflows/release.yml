@@ -9,8 +9,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  release:
-    name: "Release"
+  build-linux:
+    name: "Build Linux"
     runs-on: ubuntu-latest
     steps:
       - uses: "actions/checkout@v3"
@@ -20,16 +20,14 @@ jobs:
           cp -r image_ai_utils build
           cp image_ai_utils.desktop build
           cd build
-          zip -r ../image_ai_utils.zip .
-      - uses: "marvinpinto/action-automatic-releases@latest"
+          zip -r ../image_ai_utils.zip . 
+      - uses: actions/upload-artifact@v3
         with:
-          repo_token: "${{ secrets.GITHUB_TOKEN }}"
-          prerelease: false
-          draft: true
-          files: |
-            *.zip
-  release-windows:
-    name: "Windows Release"
+          name: linux-build
+          path: image_ai_utils.zip
+
+  build-windows:
+    name: "Build Windows"
     runs-on: windows-latest
     steps:
       - uses: "actions/checkout@v3"
@@ -38,11 +36,26 @@ jobs:
           python-version: "3.8"
       - name: build
         run: |
-          xcopy /e /i image_ai_utils build
+          xcopy /e /i image_ai_utils build/image_ai_utils 
           xcopy image_ai_utils.desktop build
           cd build
           pip install -r image_ai_utils/requirements.txt -t image_ai_utils/libs
-          tar -acvf ../image_ai_utils_windows.zip *
+          tar -acvf ../image_ai_utils_windows_krita510.zip *
+      - uses: actions/upload-artifact@v3
+        with:
+          name: windows-build
+          path: image_ai_utils_windows_krita510.zip
+
+  release:
+    name: "Release"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v3
+        with:
+          name: linux-build
+      - uses: actions/download-artifact@v3
+        with:
+          name: windows-build
       - uses: "marvinpinto/action-automatic-releases@latest"
         with:
           repo_token: "${{ secrets.GITHUB_TOKEN }}"
