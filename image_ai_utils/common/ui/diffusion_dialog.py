@@ -75,7 +75,7 @@ class DiffusionDialog(QDialog):
     def set_source_image(self, source_image: Image.Image):
         self._source_image = source_image
 
-    def set_mask(self, mask: Image.Image):
+    def set_mask(self, mask: Optional[Image.Image]):
         self._mask = mask
 
     def _update_buttons(self):

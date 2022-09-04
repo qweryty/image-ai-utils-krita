@@ -85,7 +85,7 @@ class ImageAIUtilsClient:
             self,
             prompt: str,
             source_image: Image.Image,
-            mask: Image.Image,
+            mask: Optional[Image.Image],
             strength: float = 0.8,
             num_variants: int = 6,
             num_inference_steps: int = 50,
@@ -95,18 +95,19 @@ class ImageAIUtilsClient:
         request_data = {
             'prompt': prompt,
             'source_image': image_to_base64url(source_image).decode(),
-            'mask': image_to_base64url(mask).decode(),
             'strength': strength,
             'num_inference_steps': num_inference_steps,
             'guidance_scale': guidance_scale,
             'num_variants': num_variants,
             'output_format': 'PNG',
         }
+        if mask is not None:
+            request_data['mask'] = image_to_base64url(mask).decode()
         if seed is not None:
             request_data['seed'] = seed
 
         response = httpx.post(
-            self._base_url + 'image_to_image',
+            self._base_url + 'inpainting',
             json=request_data,
             headers=self._default_headers,
             timeout=None,

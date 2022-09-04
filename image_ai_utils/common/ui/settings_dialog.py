@@ -58,6 +58,8 @@ class SettingsDialog(QDialog):
                 f
             )
 
+        Settings.reload()
+
     def apply(self):
         self.save()
         Settings.settings()

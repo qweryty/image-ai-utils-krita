@@ -20,6 +20,15 @@ class Settings(BaseSettings):
     _settings = None
 
     @classmethod
+    def reload(cls):
+        if not os.path.isfile(SETTINGS_PATH):
+            return None
+
+        with open(SETTINGS_PATH, 'r') as f:
+            cls._settings = Settings(**json.load(f))
+        return cls._settings
+
+    @classmethod
     def settings(cls):
         if cls._settings is not None:
             return cls._settings

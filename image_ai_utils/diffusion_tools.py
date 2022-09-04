@@ -1,3 +1,5 @@
+from enum import Enum
+
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
 
@@ -8,6 +10,21 @@ from .common.ui.diffusion_dialog import DiffusionMode, DiffusionDialog
 from .common.ui.settings_dialog import SettingsDialog
 from .common.ui.upscale_dialog import UpscaleDialog
 from .common.utils import get_ui_file_path
+
+
+class LayerType(str, Enum):
+    PAINT_LAYER = 'paintlayer'
+    GROUP_LAYER = 'grouplayer'
+    FILE_LAYER = 'filelayer'
+    FILTER_LAYER = 'filterlayer'
+    FILL_LAYER = 'filllayer'
+    CLONE_LAYER = 'clonelayer'
+    VECTOR_LAYER = 'vectorlayer'
+    TRANSPARENCY_MASK = 'transparencymask'
+    FILTER_MASK = 'filtermask'
+    TRANSFORM_MASK = 'transformmask'
+    SELECTION_MASK = 'selectionmask'
+    COLORIZE_MASK = 'colorizemask'
 
 
 class DiffusionToolsDockWidget(DockWidget):
@@ -90,6 +107,9 @@ class DiffusionToolsDockWidget(DockWidget):
         self.diffusion_dialog.set_target_size(width, height)
 
         current_layer = current_document.activeNode()
+        if current_layer.type() != LayerType.PAINT_LAYER:
+            return
+
         pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
         # TODO support other formats than rgba
         image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
@@ -111,12 +131,15 @@ class DiffusionToolsDockWidget(DockWidget):
         self.diffusion_dialog.set_target_size(width, height)
 
         current_layer = current_document.activeNode()
+        if current_layer.type() != LayerType.PAINT_LAYER:
+            return
+
         pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
         # TODO support other formats than rgba
         image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
         self.diffusion_dialog.set_source_image(image)
         for layer in current_layer.childNodes():
-            if layer.type() == 'transparencymask':
+            if layer.type() == LayerType.TRANSPARENCY_MASK:
                 mask = layer
                 break
         else:
