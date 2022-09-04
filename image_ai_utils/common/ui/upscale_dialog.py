@@ -60,7 +60,7 @@ class UpscaleDialog(QDialog):
         pixmap = QPixmap.fromImage(self._imageqt)
         self.image_label.setPixmap(pixmap)
 
-        self.apply_button.setEnabled(True)
+        self.apply_button.setEnabled(False)
 
     def upscale(self):
         self._result_image = ImageAIUtilsClient.client().upscale(
