@@ -1,21 +1,34 @@
-from typing import Optional, List, Tuple
+import json
+from enum import Enum
+from typing import Optional, List, Tuple, Callable
 
 import httpx
 from PIL import Image
+from websocket import create_connection
 from .settings import Settings
 from .utils import base64url_to_image, image_to_base64url
 
 
 # TODO check response code and throw custom exception
 class ImageAIUtilsClient:
-    def __init__(self, base_url: str, username: str, password: str):
+    class WebSocketResponseStatus(str, Enum):
+        FINISHED = 'finished'
+        PROGRESS = 'progress'
+
+    def __init__(self, base_url: str, username: str, password: str, use_tls: bool = False):
         if not base_url.endswith('/'):
             base_url += '/'
 
-        if not base_url.startswith(('http://', 'https://')):
-            base_url = 'http://' + base_url
+        base_url = base_url.replace('http://', '')
+        base_url = base_url.replace('https://', '')
 
-        self._base_url = base_url
+        if use_tls:
+            self._base_http_url = 'https://' + base_url
+            self._base_websocket_url = 'wss://' + base_url
+        else:
+            self._base_http_url = 'http://' + base_url
+            self._base_websocket_url = 'ws://' + base_url
+
         self._default_headers = {
             'Accept-Encoding': 'gzip,deflate'
         }
@@ -29,6 +42,7 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -41,14 +55,19 @@ class ImageAIUtilsClient:
         if seed is not None:
             request_data['seed'] = seed
 
-        response = httpx.post(
-            self._base_url + 'text_to_image',
-            json=request_data,
-            headers=self._default_headers,
-            timeout=None,
-            auth=self._auth
-        )
-        return [base64url_to_image(image.encode()) for image in response.json()['images']]
+        connection = create_connection(self._base_websocket_url + 'text_to_image')
+        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
+        connection.send(json.dumps(request_data))
+
+        response = json.loads(connection.recv())
+        while response['status'] != self.WebSocketResponseStatus.FINISHED:
+            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
+                progress_callback(response['progress'])
+
+            response = json.loads(connection.recv())
+
+        images = response['result']['images']
+        return [base64url_to_image(image.encode()) for image in images]
 
     def image_to_image(
             self,
@@ -59,6 +78,7 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -72,14 +92,19 @@ class ImageAIUtilsClient:
         if seed is not None:
             request_data['seed'] = seed
 
-        response = httpx.post(
-            self._base_url + 'image_to_image',
-            json=request_data,
-            headers=self._default_headers,
-            timeout=None,
-            auth=self._auth
-        )
-        return [base64url_to_image(image.encode()) for image in response.json()['images']]
+        connection = create_connection(self._base_websocket_url + 'image_to_image')
+        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
+        connection.send(json.dumps(request_data))
+
+        response = json.loads(connection.recv())
+        while response['status'] != self.WebSocketResponseStatus.FINISHED:
+            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
+                progress_callback(response['progress'])
+
+            response = json.loads(connection.recv())
+
+        images = response['result']['images']
+        return [base64url_to_image(image.encode()) for image in images]
 
     def inpaint(
             self,
@@ -91,6 +116,7 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -106,14 +132,19 @@ class ImageAIUtilsClient:
         if seed is not None:
             request_data['seed'] = seed
 
-        response = httpx.post(
-            self._base_url + 'inpainting',
-            json=request_data,
-            headers=self._default_headers,
-            timeout=None,
-            auth=self._auth
-        )
-        return [base64url_to_image(image.encode()) for image in response.json()['images']]
+        connection = create_connection(self._base_websocket_url + 'inpainting')
+        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
+        connection.send(json.dumps(request_data))
+
+        response = json.loads(connection.recv())
+        while response['status'] != self.WebSocketResponseStatus.FINISHED:
+            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
+                progress_callback(response['progress'])
+
+            response = json.loads(connection.recv())
+
+        images = response['result']['images']
+        return [base64url_to_image(image.encode()) for image in images]
 
     def upscale(
             self,
@@ -128,7 +159,7 @@ class ImageAIUtilsClient:
         }
 
         response = httpx.post(
-            self._base_url + 'upscale',
+            self._base_http_url + 'upscale',
             json=request_data,
             headers=self._default_headers,
             timeout=None,
@@ -139,7 +170,7 @@ class ImageAIUtilsClient:
     def test_connection(self) -> Tuple[bool, str]:
         try:
             response = httpx.get(
-                self._base_url + 'ping', headers=self._default_headers, auth=self._auth
+                self._base_http_url + 'ping', headers=self._default_headers, auth=self._auth
             )
             return response.status_code == httpx.codes.OK, response.text
         except Exception as e:
@@ -157,6 +188,7 @@ class ImageAIUtilsClient:
 
         cls._client = ImageAIUtilsClient(
             base_url=Settings.settings().SERVER_URL,
+            use_tls=Settings.settings().USE_TLS,
             username=Settings.settings().USERNAME,
             password=Settings.settings().PASSWORD
         )

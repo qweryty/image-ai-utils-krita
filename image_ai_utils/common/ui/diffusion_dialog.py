@@ -1,13 +1,15 @@
 from enum import Enum
-from typing import Optional
+from typing import Optional, Callable, Any, Dict
 
 from PyQt5 import uic
-from PyQt5.QtCore import QRect
+from PyQt5.QtCore import QRect, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
-from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinBox
+from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinBox, QGridLayout, \
+    QTextEdit, QDoubleSpinBox, QLabel
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
+from .progress_bar_dialog import ProgressBarDialog
 from .upscale_dialog import UpscaleDialog
 from ..utils import get_ui_file_path
 from ..client import ImageAIUtilsClient
@@ -51,9 +53,36 @@ class DiffusionMode(int, Enum):
     INPAINT = 2
 
 
+class DiffusionThread(QThread):
+    progress_signal = pyqtSignal(float)
+
+    def __init__(self, client_method: Callable, request_data: Dict[str, Any]):
+        super().__init__()
+        self._request_data = request_data
+        self._client_method = client_method
+        self.result_images = []
+
+    def run(self):
+        def progress_callback(progress: float):
+            self.progress_signal.emit(progress)
+
+        self.result_images = self._client_method(
+            progress_callback=progress_callback, **self._request_data
+        )
+
+
 class DiffusionDialog(QDialog):
     use_random_seed_check_box: QCheckBox
     seed_spin_box: QSpinBox
+    upscale_selected_button: QPushButton
+    apply_button: QPushButton
+    images_grid_layout: QGridLayout
+    prompt_plain_text_edit: QTextEdit
+    inference_spin_box: QSpinBox
+    guidance_scale_double_spin_box: QSpinBox
+    strength_label: QLabel
+    strength_double_spin_box: QDoubleSpinBox
+    number_of_variants_spin_box: QSpinBox
 
     def __init__(self):
         super().__init__()
@@ -62,6 +91,7 @@ class DiffusionDialog(QDialog):
             lambda state: self.seed_spin_box.setEnabled(not state)
         )
         self.upscale_dialog = UpscaleDialog()
+        self.progress_bar_dialog = ProgressBarDialog()
         self._columns = 2  # TODO change dynamically
         self._result_images = []
         self._image_selection = []
@@ -130,19 +160,26 @@ class DiffusionDialog(QDialog):
         if self._mode == DiffusionMode.TEXT_TO_IMAGE:
             aspect_ratio = self._target_width / self._target_height
             request_data['aspect_ratio'] = aspect_ratio
-            # TODO async or separate thread
-            self._result_images = ImageAIUtilsClient.client().text_to_image(**request_data)
+            thread = DiffusionThread(ImageAIUtilsClient.client().text_to_image, request_data)
         elif self._mode == DiffusionMode.IMAGE_TO_IMAGE:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
-            self._result_images = ImageAIUtilsClient.client().image_to_image(**request_data)
+            thread = DiffusionThread(ImageAIUtilsClient.client().image_to_image, request_data)
         elif self._mode == DiffusionMode.INPAINT:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
             request_data['mask'] = self._mask
-            self._result_images = ImageAIUtilsClient.client().inpaint(**request_data)
+            thread = DiffusionThread(ImageAIUtilsClient.client().inpaint, request_data)
         else:
             return
+
+        self.progress_bar_dialog.set_progress(0)
+        thread.progress_signal.connect(self.progress_bar_dialog.set_progress)
+        thread.finished.connect(self.progress_bar_dialog.accept)
+        thread.start()
+        self.progress_bar_dialog.exec()
+        thread.wait()
+        self._result_images = thread.result_images
 
         self._update_buttons()
 

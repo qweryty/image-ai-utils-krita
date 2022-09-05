@@ -15,7 +15,8 @@ SETTINGS_PATH = os.path.abspath(
 class Settings(BaseSettings):
     USERNAME: str = Field(...)
     PASSWORD: str = Field(...)
-    SERVER_URL: str = Field('http://localhost:8000/')
+    SERVER_URL: str = Field('localhost:8000')
+    USE_TLS: bool = Field(False)
 
     _settings = None
 

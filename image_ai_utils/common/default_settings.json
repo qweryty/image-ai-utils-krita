@@ -1,0 +1,6 @@
+{
+  "SERVER_URL": "localhost:7331",
+  "USE_TLS": false,
+  "USERNAME": "user",
+  "PASSWORD": "password"
+}

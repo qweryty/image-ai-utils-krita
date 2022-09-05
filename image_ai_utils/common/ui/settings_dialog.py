@@ -1,7 +1,7 @@
 import json
 
 from PyQt5 import uic
-from PyQt5.QtWidgets import QDialog, QLineEdit, QMessageBox
+from PyQt5.QtWidgets import QDialog, QLineEdit, QMessageBox, QCheckBox
 
 from ..client import ImageAIUtilsClient
 from ..utils import get_ui_file_path
@@ -12,6 +12,7 @@ class SettingsDialog(QDialog):
     url_line_edit: QLineEdit
     username_line_edit: QLineEdit
     password_line_edit: QLineEdit
+    use_tls_check_box: QCheckBox
 
     def __init__(self):
         super().__init__()
@@ -53,6 +54,7 @@ class SettingsDialog(QDialog):
                 {
                     'SERVER_URL': self.url_line_edit.text(),
                     'USERNAME': self.username_line_edit.text(),
+                    'USE_TLS': self.use_tls_check_box.isChecked(),
                     'PASSWORD': self.password_line_edit.text()
                 },
                 f

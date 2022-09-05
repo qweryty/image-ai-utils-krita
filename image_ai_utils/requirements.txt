@@ -2,3 +2,4 @@ pillow
 python-dotenv
 httpx
 pydantic
+websocket-client
