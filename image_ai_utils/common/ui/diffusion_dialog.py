@@ -1,3 +1,4 @@
+import traceback
 from enum import Enum
 from typing import Optional, Callable, Any, Dict
 
@@ -9,10 +10,11 @@ from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinB
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
+from .exception_dialog import ExceptionDialog
 from .progress_bar_dialog import ProgressBarDialog
 from .upscale_dialog import UpscaleDialog
 from ..utils import get_ui_file_path
-from ..client import ImageAIUtilsClient
+from ..client import ImageAIUtilsClient, WebSocketException
 
 
 class ImageSelectButton(QPushButton):
@@ -61,14 +63,26 @@ class DiffusionThread(QThread):
         self._request_data = request_data
         self._client_method = client_method
         self.result_images = []
+        self.success = False
+        self.error_message = None
 
     def run(self):
         def progress_callback(progress: float):
             self.progress_signal.emit(progress)
 
-        self.result_images = self._client_method(
-            progress_callback=progress_callback, **self._request_data
-        )
+        try:
+            self.result_images = self._client_method(
+                progress_callback=progress_callback, **self._request_data
+            )
+            self.success = True
+        except WebSocketException as e:
+            self.success = False
+            #ExceptionDialog(e.message).exec()
+            self.error_message = e.message
+        except Exception as e:
+            self.success = False
+            #ExceptionDialog(''.join(traceback.format_exception(type(e), e, e.__traceback__))).exec()
+            self.error_message = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
 
 
 class DiffusionDialog(QDialog):
@@ -181,6 +195,10 @@ class DiffusionDialog(QDialog):
         thread.start()
         self.progress_bar_dialog.exec()
         thread.wait()
+        if not thread.success:
+            ExceptionDialog(thread.error_message).exec()
+            return
+
         self._result_images = thread.result_images
 
         self._update_buttons()

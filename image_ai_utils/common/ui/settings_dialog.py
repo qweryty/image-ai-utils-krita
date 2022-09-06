@@ -61,6 +61,7 @@ class SettingsDialog(QDialog):
             )
 
         Settings.reload()
+        ImageAIUtilsClient.refresh_credentials()
 
     def apply(self):
         self.save()

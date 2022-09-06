@@ -1,10 +1,12 @@
 import json
 from enum import Enum
+from json import JSONDecodeError
 from typing import Optional, List, Tuple, Callable
 
 import httpx
 from PIL import Image
-from websocket import create_connection
+from websocket import create_connection, STATUS_NORMAL, WebSocketApp, \
+    WebSocketConnectionClosedException
 from .settings import Settings
 from .utils import base64url_to_image, image_to_base64url
 
@@ -12,6 +14,11 @@ from .utils import base64url_to_image, image_to_base64url
 class ScalingMode(str, Enum):
     SHRINK = 'shrink'
     GROW = 'grow'
+
+
+class WebSocketException(Exception):
+    def __init__(self, message):
+        self.message = message
 
 
 # TODO check response code and throw custom exception
@@ -39,6 +46,74 @@ class ImageAIUtilsClient:
         }
         self._auth = (username, password)
 
+    def do_diffusion_request(
+            self,
+            request: str,
+            prompt: str,
+            num_variants: int = 6,
+            num_inference_steps: int = 50,
+            guidance_scale: float = 7.5,
+            seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW,
+            **kwargs
+    ):
+        request_data = {
+            'prompt': prompt,
+            'num_inference_steps': num_inference_steps,
+            'guidance_scale': guidance_scale,
+            'num_variants': num_variants,
+            'output_format': 'PNG',
+            'scaling_mode': scaling_mode,
+        }
+        request_data.update(kwargs)
+        response = None
+        if seed is not None:
+            request_data['seed'] = seed
+
+        def on_error(_, error):
+            if isinstance(error, WebSocketConnectionClosedException):
+                error = WebSocketException('Connection to server closed unexpectedly')
+            if isinstance(error, ConnectionRefusedError):
+                error = WebSocketException('Couldn\'t connect to server')
+            raise error
+
+        def on_close(_, status_code: int, message: str):
+            if status_code != STATUS_NORMAL:
+                raise WebSocketException(message)
+            if not response or response.get('status') != self.WebSocketResponseStatus.FINISHED:
+                raise WebSocketException('Haven\'t received ')
+
+        def on_message(ws: WebSocketApp, message: str):
+            try:
+                nonlocal response
+                response = json.loads(message)
+                if 'status' not in response:
+                    raise WebSocketException(f'Wrong response format:\n{message}')
+
+                if response['status'] == self.WebSocketResponseStatus.PROGRESS:
+                    progress_callback(response['progress'])
+            except JSONDecodeError:
+                raise WebSocketException(
+                    f'Client received message that is not in json format:\n{message}'
+                )
+
+        def on_open(ws: WebSocketApp):
+            ws.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
+            ws.send(json.dumps(request_data))
+
+        app = WebSocketApp(
+            self._base_websocket_url + request,
+            on_message=on_message,
+            on_error=on_error,
+            on_close=on_close,
+            on_open=on_open,
+        )
+        app.run_forever()
+
+        images = response['result']['images']
+        return [base64url_to_image(image.encode()) for image in images]
+
     def text_to_image(
             self,
             prompt: str,
@@ -50,31 +125,17 @@ class ImageAIUtilsClient:
             progress_callback: Optional[Callable[[float], None]] = None,
             scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
-        request_data = {
-            'prompt': prompt,
-            'num_inference_steps': num_inference_steps,
-            'guidance_scale': guidance_scale,
-            'num_variants': num_variants,
-            'output_format': 'PNG',
-            'aspect_ratio': aspect_ratio,
-            'scaling_mode': scaling_mode,
-        }
-        if seed is not None:
-            request_data['seed'] = seed
-
-        connection = create_connection(self._base_websocket_url + 'text_to_image')
-        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
-        connection.send(json.dumps(request_data))
-
-        response = json.loads(connection.recv())
-        while response['status'] != self.WebSocketResponseStatus.FINISHED:
-            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
-                progress_callback(response['progress'])
-
-            response = json.loads(connection.recv())
-
-        images = response['result']['images']
-        return [base64url_to_image(image.encode()) for image in images]
+        return self.do_diffusion_request(
+            'text_to_image',
+            prompt=prompt,
+            aspect_ratio=aspect_ratio,
+            num_variants=num_variants,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed,
+            progress_callback=progress_callback,
+            scaling_mode=scaling_mode
+        )
 
     def image_to_image(
             self,
@@ -88,32 +149,18 @@ class ImageAIUtilsClient:
             progress_callback: Optional[Callable[[float], None]] = None,
             scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
-        request_data = {
-            'prompt': prompt,
-            'source_image': image_to_base64url(source_image).decode(),
-            'strength': strength,
-            'num_inference_steps': num_inference_steps,
-            'guidance_scale': guidance_scale,
-            'num_variants': num_variants,
-            'output_format': 'PNG',
-            'scaling_mode': scaling_mode,
-        }
-        if seed is not None:
-            request_data['seed'] = seed
-
-        connection = create_connection(self._base_websocket_url + 'image_to_image')
-        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
-        connection.send(json.dumps(request_data))
-
-        response = json.loads(connection.recv())
-        while response['status'] != self.WebSocketResponseStatus.FINISHED:
-            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
-                progress_callback(response['progress'])
-
-            response = json.loads(connection.recv())
-
-        images = response['result']['images']
-        return [base64url_to_image(image.encode()) for image in images]
+        return self.do_diffusion_request(
+            'image_to_image',
+            prompt=prompt,
+            source_image=image_to_base64url(source_image).decode(),
+            strength=strength,
+            num_variants=num_variants,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed,
+            progress_callback=progress_callback,
+            scaling_mode=scaling_mode
+        )
 
     def inpaint(
             self,
@@ -128,34 +175,22 @@ class ImageAIUtilsClient:
             progress_callback: Optional[Callable[[float], None]] = None,
             scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
-        request_data = {
-            'prompt': prompt,
-            'source_image': image_to_base64url(source_image).decode(),
-            'strength': strength,
-            'num_inference_steps': num_inference_steps,
-            'guidance_scale': guidance_scale,
-            'num_variants': num_variants,
-            'output_format': 'PNG',
-            'scaling_mode': scaling_mode,
-        }
+        extra_kwargs = {}
         if mask is not None:
-            request_data['mask'] = image_to_base64url(mask).decode()
-        if seed is not None:
-            request_data['seed'] = seed
-
-        connection = create_connection(self._base_websocket_url + 'inpainting')
-        connection.send(json.dumps({'username': self._auth[0], 'password': self._auth[1]}))
-        connection.send(json.dumps(request_data))
-
-        response = json.loads(connection.recv())
-        while response['status'] != self.WebSocketResponseStatus.FINISHED:
-            if response['status'] == self.WebSocketResponseStatus.PROGRESS:
-                progress_callback(response['progress'])
-
-            response = json.loads(connection.recv())
-
-        images = response['result']['images']
-        return [base64url_to_image(image.encode()) for image in images]
+            extra_kwargs['mask'] = image_to_base64url(mask).decode()
+        return self.do_diffusion_request(
+            'inpainting',
+            prompt=prompt,
+            source_image=image_to_base64url(source_image).decode(),
+            strength=strength,
+            num_variants=num_variants,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed,
+            progress_callback=progress_callback,
+            scaling_mode=scaling_mode,
+            **extra_kwargs
+        )
 
     def upscale(
             self,
@@ -205,3 +240,8 @@ class ImageAIUtilsClient:
         )
 
         return cls._client
+
+    @classmethod
+    def refresh_credentials(cls):
+        if cls.client() is not None:
+            cls.client()._auth = (Settings.settings().USERNAME, Settings.settings().PASSWORD)
