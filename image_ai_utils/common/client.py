@@ -9,6 +9,11 @@ from .settings import Settings
 from .utils import base64url_to_image, image_to_base64url
 
 
+class ScalingMode(str, Enum):
+    SHRINK = 'shrink'
+    GROW = 'grow'
+
+
 # TODO check response code and throw custom exception
 class ImageAIUtilsClient:
     class WebSocketResponseStatus(str, Enum):
@@ -42,7 +47,8 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
-            progress_callback: Optional[Callable[[float], None]] = None
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -51,6 +57,7 @@ class ImageAIUtilsClient:
             'num_variants': num_variants,
             'output_format': 'PNG',
             'aspect_ratio': aspect_ratio,
+            'scaling_mode': scaling_mode,
         }
         if seed is not None:
             request_data['seed'] = seed
@@ -78,7 +85,8 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
-            progress_callback: Optional[Callable[[float], None]] = None
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -88,6 +96,7 @@ class ImageAIUtilsClient:
             'guidance_scale': guidance_scale,
             'num_variants': num_variants,
             'output_format': 'PNG',
+            'scaling_mode': scaling_mode,
         }
         if seed is not None:
             request_data['seed'] = seed
@@ -116,7 +125,8 @@ class ImageAIUtilsClient:
             num_inference_steps: int = 50,
             guidance_scale: float = 7.5,
             seed: Optional[int] = None,
-            progress_callback: Optional[Callable[[float], None]] = None
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW
     ) -> List[Image.Image]:
         request_data = {
             'prompt': prompt,
@@ -126,6 +136,7 @@ class ImageAIUtilsClient:
             'guidance_scale': guidance_scale,
             'num_variants': num_variants,
             'output_format': 'PNG',
+            'scaling_mode': scaling_mode,
         }
         if mask is not None:
             request_data['mask'] = image_to_base64url(mask).decode()

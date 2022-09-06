@@ -5,7 +5,7 @@ from PyQt5 import uic
 from PyQt5.QtCore import QRect, QThread, pyqtSignal
 from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
 from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinBox, QGridLayout, \
-    QTextEdit, QDoubleSpinBox, QLabel
+    QTextEdit, QDoubleSpinBox, QLabel, QComboBox
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
@@ -83,6 +83,7 @@ class DiffusionDialog(QDialog):
     strength_label: QLabel
     strength_double_spin_box: QDoubleSpinBox
     number_of_variants_spin_box: QSpinBox
+    scaling_mode_combo_box: QComboBox
 
     def __init__(self):
         super().__init__()
@@ -152,7 +153,8 @@ class DiffusionDialog(QDialog):
             'prompt': self.prompt_plain_text_edit.toPlainText(),
             'num_inference_steps': self.inference_spin_box.value(),
             'guidance_scale': self.guidance_scale_double_spin_box.value(),
-            'num_variants': self.number_of_variants_spin_box.value()
+            'num_variants': self.number_of_variants_spin_box.value(),
+            'scaling_mode': self.scaling_mode_combo_box.currentText()
         }
         if not self.use_random_seed_check_box.isChecked:
             request_data['seed'] = self.seed_spin_box.value()

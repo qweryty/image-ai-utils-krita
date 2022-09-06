@@ -253,6 +253,30 @@
            </property>
           </widget>
          </item>
+         <item row="7" column="1">
+          <widget class="QComboBox" name="scaling_mode_combo_box">
+           <property name="toolTip">
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;grow: requires more VRAM per image, but provides higher quality, the resulting image will be 512x512 or larger&lt;/p&gt;&lt;p&gt;shrink: requires less VRAM, but poorer quality, the resulting image will be 512x512 or smaller&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           </property>
+           <item>
+            <property name="text">
+             <string>grow</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>shrink</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="label_7">
+           <property name="text">
+            <string>Scaling Mode:</string>
+           </property>
+          </widget>
+         </item>
         </layout>
        </item>
        <item>
