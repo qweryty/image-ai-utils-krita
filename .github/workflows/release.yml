@@ -40,7 +40,7 @@ jobs:
           xcopy /e /i image_ai_utils build\image_ai_utils 
           xcopy image_ai_utils.desktop build
           cd build
-          xcopy image_ai_utils/common/default_settings.json image_ai_utils/common/settings.json
+          copy image_ai_utils\common\default_settings.json image_ai_utils\common\settings.json
           pip install -r image_ai_utils/requirements.txt -t image_ai_utils/libs
           tar -acvf ../image_ai_utils_windows_krita510.zip *
       - uses: actions/upload-artifact@v3
