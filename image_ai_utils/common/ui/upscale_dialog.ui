@@ -26,7 +26,7 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>554</width>
+          <width>530</width>
           <height>655</height>
          </rect>
         </property>
@@ -136,6 +136,41 @@
            <property name="frame">
             <bool>true</bool>
            </property>
+           <item>
+            <property name="text">
+             <string extracomment="Newest X4 model for general images">General Real-ESRGAN x4 v3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X4 model for general images">Real-ESRGAN x4 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X2 model for general images">Real-ESRGAN x2 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X4 model with MSE loss (over-smooth effects)">Real-ESRNet x4 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="official ESRGAN model">Official Real-ESRGAN x4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="Optimized for anime images; 6 RRDB blocks (smaller network)">Real-ESRGAN x4 plus anime 6b</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="Anime video model with XS size">Real-ESR anime video v3</string>
+            </property>
+           </item>
           </widget>
          </item>
          <item row="0" column="0">

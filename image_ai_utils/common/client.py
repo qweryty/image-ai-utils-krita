@@ -16,6 +16,21 @@ class ScalingMode(str, Enum):
     GROW = 'grow'
 
 
+class ESRGANModel(str, Enum):
+    # General
+    GENERAL_X4_V3 = 'general_x4_v3'
+    X4_PLUS = 'x4_plus'
+    X2_PLUS = 'x2_plus'
+    ESRNET_X4_PLUS = 'x4_plus'
+    OFFICIAL_X4 = 'official_x4'
+
+    # Anime/Illustrations
+    X4_PLUS_ANIME_6B = 'x4_plus_anime_6b'
+
+    # Anime video
+    ANIME_VIDEO_V3 = 'anime_video_v3'
+
+
 class WebSocketException(Exception):
     def __init__(self, message):
         self.message = message
@@ -196,12 +211,14 @@ class ImageAIUtilsClient:
             self,
             source_image: Image.Image,
             target_width: int,
-            target_height: int
+            target_height: int,
+            esrgan_model: ESRGANModel = ESRGANModel.GENERAL_X4_V3
     ) -> Image.Image:
         request_data = {
             'image': image_to_base64url(source_image).decode(),
             'target_width': target_width,
             'target_height': target_height,
+            'model': esrgan_model
         }
 
         response = httpx.post(

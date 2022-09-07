@@ -9,8 +9,17 @@ from PyQt5.QtWidgets import QDialog, QSpinBox, QLabel, QPushButton, QWidget, QCh
 from PIL import Image
 from PIL.ImageQt import ImageQt
 from ..utils import get_ui_file_path
-from ..client import ImageAIUtilsClient
+from ..client import ImageAIUtilsClient, ESRGANModel
 
+ESRGAN_MODELS = [
+    ESRGANModel.GENERAL_X4_V3,
+    ESRGANModel.X4_PLUS,
+    ESRGANModel.X2_PLUS,
+    ESRGANModel.ESRNET_X4_PLUS,
+    ESRGANModel.OFFICIAL_X4,
+    ESRGANModel.X4_PLUS_ANIME_6B,
+    ESRGANModel.ANIME_VIDEO_V3
+]
 
 class UpscaleDialog(QDialog):
     target_width_spin_box: QSpinBox
@@ -22,6 +31,7 @@ class UpscaleDialog(QDialog):
     upscale_mode_combo_box: QComboBox
     use_realesrgan_label: QLabel
     init_strength_label: QLabel
+    esrgan_model_combo_box: QComboBox
 
     class UpscalingMode(int, Enum):
         REAL_ESRGAN = 0
@@ -67,6 +77,7 @@ class UpscaleDialog(QDialog):
             source_image=self._source_image,
             target_width=self.target_width_spin_box.value(),
             target_height=self.target_height_spin_box.value(),
+            esrgan_model=ESRGAN_MODELS[self.esrgan_model_combo_box.currentIndex()]
         )
 
         self._imageqt = ImageQt(self._result_image)
