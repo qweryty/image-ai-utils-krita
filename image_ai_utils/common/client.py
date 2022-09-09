@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from json import JSONDecodeError
-from typing import Optional, List, Tuple, Callable
+from typing import Optional, List, Tuple, Callable, Any, Dict
 
 import httpx
 from PIL import Image
@@ -61,34 +61,19 @@ class ImageAIUtilsClient:
         }
         self._auth = (username, password)
 
-    def do_diffusion_request(
+    def _websocket_request(
             self,
             request: str,
-            prompt: str,
-            num_variants: int = 6,
-            num_inference_steps: int = 50,
-            guidance_scale: float = 7.5,
-            seed: Optional[int] = None,
+            request_data: Dict[str, Any],
             progress_callback: Optional[Callable[[float], None]] = None,
-            scaling_mode: ScalingMode = ScalingMode.GROW,
-            **kwargs
-    ):
-        request_data = {
-            'prompt': prompt,
-            'num_inference_steps': num_inference_steps,
-            'guidance_scale': guidance_scale,
-            'num_variants': num_variants,
-            'output_format': 'PNG',
-            'scaling_mode': scaling_mode,
-        }
-        request_data.update(kwargs)
-        response = None
-        if seed is not None:
-            request_data['seed'] = seed
+    ) -> Dict[str, Any]:
+        response: Optional[Dict[str, Any]] = None
 
         def on_error(_, error):
             if isinstance(error, WebSocketConnectionClosedException):
-                error = WebSocketException('Connection to server closed unexpectedly')
+                error = WebSocketException(
+                    'Connection to server closed unexpectedly. See server logs for details'
+                )
             if isinstance(error, ConnectionRefusedError):
                 error = WebSocketException('Couldn\'t connect to server')
             raise error
@@ -125,6 +110,34 @@ class ImageAIUtilsClient:
             on_open=on_open,
         )
         app.run_forever()
+
+        return response
+
+    def do_diffusion_request(
+            self,
+            request: str,
+            prompt: str,
+            num_variants: int = 6,
+            num_inference_steps: int = 50,
+            guidance_scale: float = 7.5,
+            seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW,
+            **kwargs
+    ):
+        request_data = {
+            'prompt': prompt,
+            'num_inference_steps': num_inference_steps,
+            'guidance_scale': guidance_scale,
+            'num_variants': num_variants,
+            'output_format': 'PNG',
+            'scaling_mode': scaling_mode,
+        }
+        request_data.update(kwargs)
+        if seed is not None:
+            request_data['seed'] = seed
+
+        response = self._websocket_request(request, request_data, progress_callback)
 
         images = response['result']['images']
         return [base64url_to_image(image.encode()) for image in images]
@@ -206,6 +219,40 @@ class ImageAIUtilsClient:
             scaling_mode=scaling_mode,
             **extra_kwargs
         )
+
+    def gobig(
+            self,
+            prompt: str,
+            source_image: Image.Image,
+            target_width: int,
+            target_height: int,
+            use_real_esrgan: bool = True,
+            esrgan_model: ESRGANModel = ESRGANModel.GENERAL_X4_V3,
+            maximize: bool = True,
+            overlap: int = 64,
+            strength: float = 0.8,
+            num_inference_steps: int = 50,
+            guidance_scale: float = 7.5,
+            seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None,
+    ) -> Image.Image:
+        request_data = {
+            'prompt': prompt,
+            'output_format': 'PNG',
+            'num_inference_steps': num_inference_steps,
+            'guidance_scale': guidance_scale,
+            'seed': seed,
+            'image': image_to_base64url(source_image).decode(),
+            'use_real_esrgan': use_real_esrgan,
+            'esrgan_model': esrgan_model,
+            'maximize': maximize,
+            'strength': strength,
+            'target_width': target_width,
+            'target_height': target_height,
+            'overlap': overlap
+        }
+        response = self._websocket_request('gobig', request_data, progress_callback)
+        return base64url_to_image(response['result']['image'].encode())
 
     def upscale(
             self,
