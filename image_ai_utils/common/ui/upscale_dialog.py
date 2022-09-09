@@ -1,10 +1,13 @@
+import logging
 from enum import Enum
 from typing import Optional, List
 
+import httpx
 from PyQt5 import uic
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QDialog, QSpinBox, QLabel, QPushButton, QWidget, QCheckBox, \
     QDoubleSpinBox, QComboBox, QPlainTextEdit
+from httpx import HTTPStatusError
 
 from PIL import Image
 from PIL.ImageQt import ImageQt
@@ -158,9 +161,14 @@ class UpscaleDialog(QDialog):
             self.height_scale_spin_box.setValue(self.scale_spin_box.value())
 
     def set_upscaling_params(
-            self, source_image: Image.Image, target_width: int, target_height: int, prompt: str
+            self,
+            source_image: Image.Image,
+            target_width: int,
+            target_height: int,
+            prompt: str = '',
+            lock_aspect_ratio: bool = False
     ):
-        self.lock_aspect_ratio_check_box.setChecked(False)
+        self.lock_aspect_ratio_check_box.setChecked(lock_aspect_ratio)
         self.prompt_plain_text_edit.setPlainText(prompt)
         self._source_image = source_image
         source_width, source_height = self._source_image.size
@@ -177,12 +185,20 @@ class UpscaleDialog(QDialog):
 
     def upscale(self):
         if self.upscale_mode_combo_box.currentIndex() == self.UpscalingMode.REAL_ESRGAN:
-            self._result_image = ImageAIUtilsClient.client().upscale(
-                source_image=self._source_image,
-                target_width=self.target_width_spin_box.value(),
-                target_height=self.target_height_spin_box.value(),
-                esrgan_model=ESRGAN_MODELS[self.esrgan_model_combo_box.currentIndex()]
-            )
+            try:
+                self._result_image = ImageAIUtilsClient.client().upscale(
+                    source_image=self._source_image,
+                    target_width=self.target_width_spin_box.value(),
+                    target_height=self.target_height_spin_box.value(),
+                    esrgan_model=ESRGAN_MODELS[self.esrgan_model_combo_box.currentIndex()],
+                    maximize=self.maximize_check_box.isChecked()
+                )
+            except HTTPStatusError as e:
+                ExceptionDialog(f'{e.response.status_code}: {e.response.text}').exec()
+                return
+            except httpx.ConnectError:
+                ExceptionDialog(f'Could not connect to server').exec()
+                return
 
         else:
             request_data = {

@@ -5,7 +5,7 @@ from typing import Optional, List, Tuple, Callable, Any, Dict
 
 import httpx
 from PIL import Image
-from websocket import create_connection, STATUS_NORMAL, WebSocketApp, \
+from websocket import STATUS_NORMAL, WebSocketApp, \
     WebSocketConnectionClosedException
 from .settings import Settings
 from .utils import base64url_to_image, image_to_base64url
@@ -259,13 +259,15 @@ class ImageAIUtilsClient:
             source_image: Image.Image,
             target_width: int,
             target_height: int,
-            esrgan_model: ESRGANModel = ESRGANModel.GENERAL_X4_V3
+            esrgan_model: ESRGANModel = ESRGANModel.GENERAL_X4_V3,
+            maximize: bool = True
     ) -> Image.Image:
         request_data = {
             'image': image_to_base64url(source_image).decode(),
             'target_width': target_width,
             'target_height': target_height,
-            'model': esrgan_model
+            'model': esrgan_model,
+            'maximize': maximize
         }
 
         response = httpx.post(
@@ -275,6 +277,7 @@ class ImageAIUtilsClient:
             timeout=None,
             auth=self._auth
         )
+        response.raise_for_status()
         return base64url_to_image(response.json()['image'].encode())
 
     def test_connection(self) -> Tuple[bool, str]:
@@ -282,7 +285,7 @@ class ImageAIUtilsClient:
             response = httpx.get(
                 self._base_http_url + 'ping', headers=self._default_headers, auth=self._auth
             )
-            return response.status_code == httpx.codes.OK, response.text
+            response.status_code == httpx.codes.OK, response.text
         except Exception as e:
             return False, f'Exception: {type(e)}'
 

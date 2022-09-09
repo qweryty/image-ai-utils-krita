@@ -62,7 +62,7 @@
        <item row="1" column="0">
         <widget class="QPushButton" name="upscale_button">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Upscale</string>

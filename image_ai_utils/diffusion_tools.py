@@ -1,10 +1,11 @@
 from enum import Enum
+from typing import Optional
 
 from PyQt5 import uic
 from PyQt5.QtWidgets import QMessageBox
 
 from PIL import Image, ImageOps
-from krita import Extension, DockWidget, Krita, Document
+from krita import Extension, DockWidget, Krita, Document, Node
 from .common.settings import Settings
 from .common.ui.diffusion_dialog import DiffusionMode, DiffusionDialog
 from .common.ui.settings_dialog import SettingsDialog
@@ -97,6 +98,17 @@ class DiffusionToolsDockWidget(DockWidget):
 
         self.insert_layers_from_diffusion()
 
+    def _image_from_layer(
+            self, layer: Node, x: int, y: int, width: int, height: int
+    ) -> Optional[Image.Image]:
+        pixel_bytes = layer.pixelData(x, y, width, height)  # BGRA pixels
+        # TODO support other formats than rgba
+        if layer.type() == LayerType.PAINT_LAYER:
+            return Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
+        if layer.type() == LayerType.TRANSPARENCY_MASK:
+            return Image.frombytes('L', (width, height), pixel_bytes, 'raw')
+        return None
+
     def image_to_image(self):
         current_document = Krita.instance().activeDocument()
         if not current_document:
@@ -110,9 +122,7 @@ class DiffusionToolsDockWidget(DockWidget):
         if current_layer.type() != LayerType.PAINT_LAYER:
             return
 
-        pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
-        # TODO support other formats than rgba
-        image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
+        image = self._image_from_layer(current_layer, x, y, width, height)
         self.diffusion_dialog.set_source_image(image)
 
         self.diffusion_dialog.set_mode(DiffusionMode.IMAGE_TO_IMAGE)
@@ -134,9 +144,7 @@ class DiffusionToolsDockWidget(DockWidget):
         if current_layer.type() != LayerType.PAINT_LAYER:
             return
 
-        pixel_bytes = current_layer.pixelData(x, y, width, height)  # BGRA pixels
-        # TODO support other formats than rgba
-        image = Image.frombytes('RGBA', (width, height), pixel_bytes, 'raw', 'BGRA')
+        image = self._image_from_layer(current_layer, x, y, width, height)
         self.diffusion_dialog.set_source_image(image)
         for layer in current_layer.childNodes():
             if layer.type() == LayerType.TRANSPARENCY_MASK:
@@ -145,8 +153,7 @@ class DiffusionToolsDockWidget(DockWidget):
         else:
             return
 
-        mask_pixel_bytes = mask.pixelData(x, y, width, height)  # BGRA pixels
-        mask_image = Image.frombytes('L', (width, height), mask_pixel_bytes, 'raw')
+        mask_image = self._image_from_layer(mask, x, y, width, height)
         self.diffusion_dialog.set_mask(ImageOps.invert(mask_image))
 
         self.diffusion_dialog.set_mode(DiffusionMode.INPAINT)
@@ -160,8 +167,33 @@ class DiffusionToolsDockWidget(DockWidget):
         if not current_document:
             return
 
-        if not self.diffusion_dialog.exec():
+        x, y, width, height = self._get_document_selection(current_document)
+
+        current_layer = current_document.activeNode()
+        if current_layer.type() != LayerType.PAINT_LAYER:
             return
+
+        image = self._image_from_layer(current_layer, x, y, width, height)
+        self.upscale_dialog.set_upscaling_params(
+            source_image=image,
+            target_width=width * 2,
+            target_height=height * 2,
+            lock_aspect_ratio=True
+        )
+
+        if not self.upscale_dialog.exec():
+            return
+
+        upscaled = self.upscale_dialog.result_image
+        if current_document.selection() is None:
+            current_document.setWidth(upscaled.width)
+            current_document.setHeight(upscaled.height)
+
+        parent = current_layer.parentNode()
+        new_node = current_document.createNode(f'{current_layer.name()} upscaled', 'paintLayer')
+        pixel_bytes = upscaled.convert('RGBA').tobytes('raw', 'BGRA')
+        new_node.setPixelData(pixel_bytes, x, y, upscaled.width, upscaled.height)
+        parent.addChildNode(new_node, current_layer)
 
     def call_settings(self):
         self.settings_dialog.init_fields()

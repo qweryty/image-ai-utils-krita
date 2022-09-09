@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1117</width>
-    <height>853</height>
+    <height>955</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +27,7 @@
           <x>0</x>
           <y>0</y>
           <width>702</width>
-          <height>829</height>
+          <height>931</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
@@ -85,31 +85,31 @@
           <widget class="QPlainTextEdit" name="prompt_plain_text_edit"/>
          </item>
          <item row="2" column="0">
-          <widget class="QLabel" name="use_realesrgan_label">
-           <property name="text">
-            <string>Use RealESRGAN:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QCheckBox" name="use_realesrgan_check_box">
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checked">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
           <widget class="QLabel" name="label_6">
            <property name="text">
             <string>Maximize:</string>
            </property>
           </widget>
          </item>
-         <item row="3" column="1">
+         <item row="2" column="1">
           <widget class="QCheckBox" name="maximize_check_box">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="use_realesrgan_label">
+           <property name="text">
+            <string>Use RealESRGAN:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="use_realesrgan_check_box">
            <property name="text">
             <string/>
            </property>
@@ -227,6 +227,13 @@
            </property>
           </widget>
          </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="use_random_seed_label">
+           <property name="text">
+            <string>Use Random Seed:</string>
+           </property>
+          </widget>
+         </item>
          <item row="8" column="1">
           <widget class="QCheckBox" name="use_random_seed_check_box">
            <property name="text">
@@ -234,6 +241,20 @@
            </property>
            <property name="checked">
             <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="seed_label">
+           <property name="text">
+            <string>Seed:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QSpinBox" name="seed_spin_box">
+           <property name="enabled">
+            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -251,6 +272,9 @@
            </property>
            <property name="maximum">
             <number>512</number>
+           </property>
+           <property name="value">
+            <number>50</number>
            </property>
           </widget>
          </item>
@@ -348,6 +372,9 @@
            <property name="singleStep">
             <double>0.200000000000000</double>
            </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
           </widget>
          </item>
          <item row="17" column="0">
@@ -364,6 +391,9 @@
            </property>
            <property name="singleStep">
             <double>0.200000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -382,26 +412,8 @@
            <property name="singleStep">
             <double>0.200000000000000</double>
            </property>
-          </widget>
-         </item>
-         <item row="8" column="0">
-          <widget class="QLabel" name="use_random_seed_label">
-           <property name="text">
-            <string>Use Random Seed:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="0">
-          <widget class="QLabel" name="seed_label">
-           <property name="text">
-            <string>Seed:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="9" column="1">
-          <widget class="QSpinBox" name="seed_spin_box">
-           <property name="enabled">
-            <bool>false</bool>
+           <property name="value">
+            <double>2.000000000000000</double>
            </property>
           </widget>
          </item>
@@ -432,8 +444,8 @@
    <slot>apply()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>583</x>
-     <y>648</y>
+     <x>1104</x>
+     <y>840</y>
     </hint>
     <hint type="destinationlabel">
      <x>567</x>
@@ -464,8 +476,8 @@
    <slot>change_mode(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>736</x>
-     <y>63</y>
+     <x>1103</x>
+     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
@@ -480,8 +492,8 @@
    <slot>update_target_width(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>672</x>
-     <y>263</y>
+     <x>1103</x>
+     <y>578</y>
     </hint>
     <hint type="destinationlabel">
      <x>431</x>
@@ -496,8 +508,8 @@
    <slot>update_target_height(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>621</x>
-     <y>302</y>
+     <x>1103</x>
+     <y>614</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -512,8 +524,8 @@
    <slot>update_width_scale(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>594</x>
-     <y>414</y>
+     <x>1103</x>
+     <y>731</y>
     </hint>
     <hint type="destinationlabel">
      <x>432</x>
@@ -528,8 +540,8 @@
    <slot>update_height_scale(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>588</x>
-     <y>448</y>
+     <x>1103</x>
+     <y>767</y>
     </hint>
     <hint type="destinationlabel">
      <x>431</x>
@@ -544,8 +556,8 @@
    <slot>update_scale(double)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>638</x>
-     <y>482</y>
+     <x>1103</x>
+     <y>803</y>
     </hint>
     <hint type="destinationlabel">
      <x>431</x>
@@ -560,8 +572,8 @@
    <slot>toggle_lock_aspect_ratio(bool)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>565</x>
-     <y>377</y>
+     <x>1103</x>
+     <y>692</y>
     </hint>
     <hint type="destinationlabel">
      <x>430</x>
