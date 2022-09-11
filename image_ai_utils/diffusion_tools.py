@@ -8,6 +8,7 @@ from PIL import Image, ImageOps
 from krita import Extension, DockWidget, Krita, Document, Node
 from .common.settings import Settings
 from .common.ui.diffusion_dialog import DiffusionMode, DiffusionDialog
+from .common.ui.face_restoration_dialog import FaceRestorationDialog
 from .common.ui.settings_dialog import SettingsDialog
 from .common.ui.upscale_dialog import UpscaleDialog
 from .common.utils import get_ui_file_path
@@ -38,6 +39,7 @@ class DiffusionToolsDockWidget(DockWidget):
         self.main_widget.image_to_image_button.clicked.connect(self.image_to_image)
         self.main_widget.inpaint_button.clicked.connect(self.inpaint)
         self.main_widget.upscale_button.clicked.connect(self.upscale)
+        self.main_widget.face_restoration_button.clicked.connect(self.face_restoration)
         self.main_widget.settings_button.clicked.connect(self.call_settings)
 
         self._depend_on_settings = [
@@ -54,6 +56,7 @@ class DiffusionToolsDockWidget(DockWidget):
         self.upscale_dialog = UpscaleDialog()
         self.diffusion_dialog = DiffusionDialog()
         self.settings_dialog = SettingsDialog()
+        self.face_restoration_dialog = FaceRestorationDialog()
 
     def insert_layers_from_diffusion(self, below: bool = False):
         current_document = Krita.instance().activeDocument()
@@ -193,6 +196,33 @@ class DiffusionToolsDockWidget(DockWidget):
         new_node = current_document.createNode(f'{current_layer.name()} upscaled', 'paintLayer')
         pixel_bytes = upscaled.convert('RGBA').tobytes('raw', 'BGRA')
         new_node.setPixelData(pixel_bytes, x, y, upscaled.width, upscaled.height)
+        parent.addChildNode(new_node, current_layer)
+
+    def face_restoration(self):
+        current_document = Krita.instance().activeDocument()
+        if not current_document:
+            return
+
+        x, y, width, height = self._get_document_selection(current_document)
+
+        current_layer = current_document.activeNode()
+        if current_layer.type() != LayerType.PAINT_LAYER:
+            return
+
+        image = self._image_from_layer(current_layer, x, y, width, height)
+        self.face_restoration_dialog.set_source_image(image)
+        if not self.face_restoration_dialog.exec():
+            return
+
+        restored = self.face_restoration_dialog.result_image
+        if current_document.selection() is None:
+            current_document.setWidth(restored.width)
+            current_document.setHeight(restored.height)
+
+        parent = current_layer.parentNode()
+        new_node = current_document.createNode(f'{current_layer.name()} upscaled', 'paintLayer')
+        pixel_bytes = restored.convert('RGBA').tobytes('raw', 'BGRA')
+        new_node.setPixelData(pixel_bytes, x, y, restored.width, restored.height)
         parent.addChildNode(new_node, current_layer)
 
     def call_settings(self):

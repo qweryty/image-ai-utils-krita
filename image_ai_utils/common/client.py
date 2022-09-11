@@ -31,6 +31,12 @@ class ESRGANModel(str, Enum):
     ANIME_VIDEO_V3 = 'anime_video_v3'
 
 
+class GFPGANModel(str, Enum):
+    V1_3 = 'V1.3'
+    V1_2 = 'V1.2'
+    V1 = 'V1'
+
+
 class WebSocketException(Exception):
     def __init__(self, message):
         self.message = message
@@ -272,6 +278,36 @@ class ImageAIUtilsClient:
 
         response = httpx.post(
             self._base_http_url + 'upscale',
+            json=request_data,
+            headers=self._default_headers,
+            timeout=None,
+            auth=self._auth
+        )
+        response.raise_for_status()
+        return base64url_to_image(response.json()['image'].encode())
+
+    def restore_face(
+            self,
+            source_image: Image.Image,
+            model_type: GFPGANModel = GFPGANModel.V1_3,
+            use_real_esrgan: bool = True,
+            bg_tile: int = 400,
+            upscale: int = 2,
+            aligned: bool = False,
+            only_center_face: bool = False
+    ) -> Image.Image:
+        request_data = {
+            'image': image_to_base64url(source_image).decode(),
+            'model_type': model_type,
+            'use_real_esrgan': use_real_esrgan,
+            'bg_tile': bg_tile,
+            'upscale': upscale,
+            'aligned': aligned,
+            'only_center_face': only_center_face
+        }
+
+        response = httpx.post(
+            self._base_http_url + 'restore_face',
             json=request_data,
             headers=self._default_headers,
             timeout=None,
