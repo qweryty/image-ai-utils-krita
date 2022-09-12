@@ -1,7 +1,7 @@
 import json
 from enum import Enum
 from json import JSONDecodeError
-from typing import Optional, List, Tuple, Callable, Any, Dict
+from typing import Optional, List, Tuple, Callable, Any, Dict, Union
 
 import httpx
 from PIL import Image
@@ -129,8 +129,9 @@ class ImageAIUtilsClient:
             seed: Optional[int] = None,
             progress_callback: Optional[Callable[[float], None]] = None,
             scaling_mode: ScalingMode = ScalingMode.GROW,
+            return_raw: bool = False,
             **kwargs
-    ):
+    ) -> Union[List[Image.Image], Dict[str, Any]]:
         request_data = {
             'prompt': prompt,
             'num_inference_steps': num_inference_steps,
@@ -145,8 +146,11 @@ class ImageAIUtilsClient:
 
         response = self._websocket_request(request, request_data, progress_callback)
 
-        images = response['result']['images']
-        return [base64url_to_image(image.encode()) for image in images]
+        if return_raw:
+            return response
+        else:
+            images = response['result']['images']
+            return [base64url_to_image(image.encode()) for image in images]
 
     def text_to_image(
             self,
@@ -196,6 +200,40 @@ class ImageAIUtilsClient:
             scaling_mode=scaling_mode
         )
 
+    def make_tilable(
+            self,
+            prompt: str,
+            source_image: Image.Image,
+            strength: float = 0.8,
+            num_variants: int = 6,
+            num_inference_steps: int = 50,
+            guidance_scale: float = 7.5,
+            seed: Optional[int] = None,
+            progress_callback: Optional[Callable[[float], None]] = None,
+            scaling_mode: ScalingMode = ScalingMode.GROW,
+            border_width: int = 50,
+            border_softness: float = 0.5
+    ) -> Tuple[List[Image.Image], Image.Image]:
+        response = self.do_diffusion_request(
+            'make_tilable',
+            return_raw=True,
+            prompt=prompt,
+            source_image=image_to_base64url(source_image).decode(),
+            strength=strength,
+            num_variants=num_variants,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            seed=seed,
+            progress_callback=progress_callback,
+            scaling_mode=scaling_mode,
+            border_width=border_width,
+            border_softness=border_softness
+        )
+
+        images = [base64url_to_image(image.encode()) for image in response['result']['images']]
+        mask = base64url_to_image(response['result']['mask'].encode())
+        return images, mask
+
     def inpaint(
             self,
             prompt: str,
@@ -225,6 +263,7 @@ class ImageAIUtilsClient:
             scaling_mode=scaling_mode,
             **extra_kwargs
         )
+
 
     def gobig(
             self,
