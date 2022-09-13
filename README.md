@@ -4,11 +4,11 @@
 - Image to image
 - Inpainting
 - Upscaling using [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
+- GoBIG upscaling
+- [GFPGAN](https://github.com/TencentARC/GFPGAN) face restoration
+- Make texture tilable
 
 ## Planned features
-- [ ] GoBIG upscaling
-- [ ] [GFPGAN](https://github.com/TencentARC/GFPGAN) face restoration
-- [ ] Make texture tilable
 - [ ] Quality of Life features
 - [ ] Ports to other programs
 
