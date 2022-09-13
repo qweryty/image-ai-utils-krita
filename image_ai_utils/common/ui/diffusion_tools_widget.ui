@@ -28,7 +28,7 @@
        <item row="1" column="2">
         <widget class="QPushButton" name="make_tilable_button">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Make Tilable</string>
@@ -36,12 +36,12 @@
         </widget>
        </item>
        <item row="1" column="1">
-        <widget class="QPushButton" name="gfpgan_button">
+        <widget class="QPushButton" name="face_restoration_button">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
-          <string>GFPGAN</string>
+          <string>Face Restoration</string>
          </property>
         </widget>
        </item>
@@ -62,7 +62,7 @@
        <item row="1" column="0">
         <widget class="QPushButton" name="upscale_button">
          <property name="enabled">
-          <bool>false</bool>
+          <bool>true</bool>
          </property>
          <property name="text">
           <string>Upscale</string>
@@ -95,21 +95,17 @@
       </spacer>
      </item>
      <item>
-      <layout class="QGridLayout" name="gridLayout_3">
-       <item row="1" column="0">
-        <widget class="QPushButton" name="quick_mask_button">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="toolTip">
-          <string>Creates transparency mask for current layer</string>
-         </property>
-         <property name="text">
-          <string>Quick Mask</string>
-         </property>
-        </widget>
-       </item>
-      </layout>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
      </item>
     </layout>
    </item>

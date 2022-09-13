@@ -4,11 +4,11 @@
 - Image to image
 - Inpainting
 - Upscaling using [Real-ESRGAN](https://github.com/xinntao/Real-ESRGAN)
+- GoBIG upscaling
+- [GFPGAN](https://github.com/TencentARC/GFPGAN) face restoration
+- Make texture tilable
 
 ## Planned features
-- [ ] GoBIG upscaling
-- [ ] [GFPGAN](https://github.com/TencentARC/GFPGAN) face restoration
-- [ ] Make texture tilable
 - [ ] Quality of Life features
 - [ ] Ports to other programs
 
@@ -23,6 +23,7 @@ For that, press `Settings` button in addon panel and fill your server credential
 If the connection was not successful, it will show you an error message, which you can use to debug your problem.
 
 ## Usage tips
+- Only 8-bit RGB/Alpha images with sRGB color profile are currently supported
 - All operations work on active layer only
 - `Img2Img` and `Inpaint` operations perform badly on areas with transparency(this is considered a bug and will be fixed soon)
 - `Inpaint` works by using transparency mask

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>785</width>
-    <height>679</height>
+    <width>1117</width>
+    <height>955</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,7 @@
   </property>
   <layout class="QGridLayout" name="gridLayout">
    <item row="1" column="0">
-    <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,0">
+    <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
      <item>
       <widget class="QScrollArea" name="scrollArea">
        <property name="widgetResizable">
@@ -26,8 +26,8 @@
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>554</width>
-          <height>655</height>
+          <width>702</width>
+          <height>931</height>
          </rect>
         </property>
         <layout class="QGridLayout" name="gridLayout_2">
@@ -53,91 +53,6 @@
        </item>
        <item>
         <layout class="QFormLayout" name="formLayout">
-         <item row="1" column="0">
-          <widget class="QLabel" name="use_realesrgan_label">
-           <property name="text">
-            <string>Use RealESRGAN:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="0">
-          <widget class="QLabel" name="init_strength_label">
-           <property name="text">
-            <string>Init Strength:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="3" column="1">
-          <widget class="QDoubleSpinBox" name="init_strength_double_spin_box">
-           <property name="maximum">
-            <double>1.000000000000000</double>
-           </property>
-           <property name="singleStep">
-            <double>0.100000000000000</double>
-           </property>
-           <property name="value">
-            <double>0.500000000000000</double>
-           </property>
-          </widget>
-         </item>
-         <item row="1" column="1">
-          <widget class="QCheckBox" name="use_realesrgan_check_box">
-           <property name="text">
-            <string/>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="0">
-          <widget class="QLabel" name="label_3">
-           <property name="text">
-            <string>Target Width:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="0">
-          <widget class="QLabel" name="label_4">
-           <property name="text">
-            <string>Target Height:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="4" column="1">
-          <widget class="QSpinBox" name="target_width_spin_box">
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100000</number>
-           </property>
-          </widget>
-         </item>
-         <item row="5" column="1">
-          <widget class="QSpinBox" name="target_height_spin_box">
-           <property name="minimum">
-            <number>1</number>
-           </property>
-           <property name="maximum">
-            <number>100000</number>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="0">
-          <widget class="QLabel" name="esrgan_model_label">
-           <property name="text">
-            <string>ESRGAN Model:</string>
-           </property>
-          </widget>
-         </item>
-         <item row="2" column="1">
-          <widget class="QComboBox" name="esrgan_model_combo_box">
-           <property name="editable">
-            <bool>false</bool>
-           </property>
-           <property name="frame">
-            <bool>true</bool>
-           </property>
-          </widget>
-         </item>
          <item row="0" column="0">
           <widget class="QLabel" name="label_5">
            <property name="text">
@@ -157,6 +72,349 @@
              <string>GoBIG</string>
             </property>
            </item>
+          </widget>
+         </item>
+         <item row="1" column="0">
+          <widget class="QLabel" name="prompt_label">
+           <property name="text">
+            <string>Prompt:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="1" column="1">
+          <widget class="QPlainTextEdit" name="prompt_plain_text_edit"/>
+         </item>
+         <item row="2" column="0">
+          <widget class="QLabel" name="label_6">
+           <property name="text">
+            <string>Maximize:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="2" column="1">
+          <widget class="QCheckBox" name="maximize_check_box">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="0">
+          <widget class="QLabel" name="use_realesrgan_label">
+           <property name="text">
+            <string>Use RealESRGAN:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="3" column="1">
+          <widget class="QCheckBox" name="use_realesrgan_check_box">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="0">
+          <widget class="QLabel" name="esrgan_model_label">
+           <property name="text">
+            <string>ESRGAN Model:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="4" column="1">
+          <widget class="QComboBox" name="esrgan_model_combo_box">
+           <property name="editable">
+            <bool>false</bool>
+           </property>
+           <property name="frame">
+            <bool>true</bool>
+           </property>
+           <item>
+            <property name="text">
+             <string extracomment="Newest X4 model for general images">General Real-ESRGAN x4 v3</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X4 model for general images">Real-ESRGAN x4 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X2 model for general images">Real-ESRGAN x2 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="X4 model with MSE loss (over-smooth effects)">Real-ESRNet x4 plus</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="official ESRGAN model">Official Real-ESRGAN x4</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="Optimized for anime images; 6 RRDB blocks (smaller network)">Real-ESRGAN x4 plus anime 6b</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string extracomment="Anime video model with XS size">Real-ESR anime video v3</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+         <item row="5" column="0">
+          <widget class="QLabel" name="init_strength_label">
+           <property name="text">
+            <string>Init Strength:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="5" column="1">
+          <widget class="QDoubleSpinBox" name="init_strength_double_spin_box">
+           <property name="maximum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>0.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="0">
+          <widget class="QLabel" name="inference_steps_label">
+           <property name="text">
+            <string>Inference Steps:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="6" column="1">
+          <widget class="QSpinBox" name="inference_steps_spin_box">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>1000</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="0">
+          <widget class="QLabel" name="guidance_scale_label">
+           <property name="text">
+            <string>Guidance Scale:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="7" column="1">
+          <widget class="QDoubleSpinBox" name="guidance_scale_double_spin_box">
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>7.500000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="0">
+          <widget class="QLabel" name="use_random_seed_label">
+           <property name="text">
+            <string>Use Random Seed:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="8" column="1">
+          <widget class="QCheckBox" name="use_random_seed_check_box">
+           <property name="text">
+            <string/>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="0">
+          <widget class="QLabel" name="seed_label">
+           <property name="text">
+            <string>Seed:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="9" column="1">
+          <widget class="QSpinBox" name="seed_spin_box">
+           <property name="enabled">
+            <bool>false</bool>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="0">
+          <widget class="QLabel" name="gobig_overlap_label">
+           <property name="text">
+            <string>GoBIG Overlap:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="10" column="1">
+          <widget class="QSpinBox" name="gobig_overlap_spin_box">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>512</number>
+           </property>
+           <property name="value">
+            <number>50</number>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="0">
+          <widget class="QLabel" name="label_3">
+           <property name="text">
+            <string>Target Width:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="11" column="1">
+          <widget class="QSpinBox" name="target_width_spin_box">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="0">
+          <widget class="QLabel" name="label_4">
+           <property name="text">
+            <string>Target Height:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="12" column="1">
+          <widget class="QSpinBox" name="target_height_spin_box">
+           <property name="minimum">
+            <number>1</number>
+           </property>
+           <property name="maximum">
+            <number>100000</number>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="0">
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Original Width:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="13" column="1">
+          <widget class="QLabel" name="original_width_label">
+           <property name="text">
+            <string>1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="0">
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>Original Height:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="14" column="1">
+          <widget class="QLabel" name="original_height_label">
+           <property name="text">
+            <string>1</string>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="0">
+          <widget class="QLabel" name="label_9">
+           <property name="text">
+            <string>Lock Aspect Ratio:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="15" column="1">
+          <widget class="QCheckBox" name="lock_aspect_ratio_check_box">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="0">
+          <widget class="QLabel" name="width_scale_label">
+           <property name="text">
+            <string>Width Scale:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="16" column="1">
+          <widget class="QDoubleSpinBox" name="width_scale_spin_box">
+           <property name="minimum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>99.989999999999995</double>
+           </property>
+           <property name="singleStep">
+            <double>0.200000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="0">
+          <widget class="QLabel" name="height_scale_label">
+           <property name="text">
+            <string>Height Scale:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="17" column="1">
+          <widget class="QDoubleSpinBox" name="height_scale_spin_box">
+           <property name="minimum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.200000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+         <item row="18" column="0">
+          <widget class="QLabel" name="scale_label">
+           <property name="text">
+            <string>Scale:</string>
+           </property>
+          </widget>
+         </item>
+         <item row="18" column="1">
+          <widget class="QDoubleSpinBox" name="scale_spin_box">
+           <property name="minimum">
+            <double>1.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.200000000000000</double>
+           </property>
+           <property name="value">
+            <double>2.000000000000000</double>
+           </property>
           </widget>
          </item>
         </layout>
@@ -186,8 +444,8 @@
    <slot>apply()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>583</x>
-     <y>648</y>
+     <x>1104</x>
+     <y>840</y>
     </hint>
     <hint type="destinationlabel">
      <x>567</x>
@@ -218,12 +476,108 @@
    <slot>change_mode(int)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>736</x>
-     <y>63</y>
+     <x>1103</x>
+     <y>76</y>
     </hint>
     <hint type="destinationlabel">
      <x>780</x>
      <y>111</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>target_width_spin_box</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>Dialog</receiver>
+   <slot>update_target_width(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>578</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>272</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>target_height_spin_box</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>Dialog</receiver>
+   <slot>update_target_height(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>614</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>316</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>width_scale_spin_box</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>Dialog</receiver>
+   <slot>update_width_scale(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>731</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>432</x>
+     <y>431</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>height_scale_spin_box</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>Dialog</receiver>
+   <slot>update_height_scale(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>767</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>467</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>scale_spin_box</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>Dialog</receiver>
+   <slot>update_scale(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>803</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>431</x>
+     <y>504</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lock_aspect_ratio_check_box</sender>
+   <signal>toggled(bool)</signal>
+   <receiver>Dialog</receiver>
+   <slot>toggle_lock_aspect_ratio(bool)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>1103</x>
+     <y>692</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>430</x>
+     <y>388</y>
     </hint>
    </hints>
   </connection>
@@ -233,5 +587,11 @@
   <slot>upscale()</slot>
   <slot>apply()</slot>
   <slot>change_mode(int)</slot>
+  <slot>update_width_scale(double)</slot>
+  <slot>update_height_scale(double)</slot>
+  <slot>update_scale(double)</slot>
+  <slot>update_target_width(int)</slot>
+  <slot>update_target_height(int)</slot>
+  <slot>toggle_lock_aspect_ratio(bool)</slot>
  </slots>
 </ui>

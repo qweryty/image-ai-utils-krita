@@ -1,9 +1,8 @@
-import traceback
 from enum import Enum
-from typing import Optional, Callable, Any, Dict
+from typing import Optional, List
 
 from PyQt5 import uic
-from PyQt5.QtCore import QRect, QThread, pyqtSignal
+from PyQt5.QtCore import QRect
 from PyQt5.QtGui import QPixmap, QPainter, QPaintEvent
 from PyQt5.QtWidgets import QDialog, QPushButton, QSizePolicy, QCheckBox, QSpinBox, QGridLayout, \
     QTextEdit, QDoubleSpinBox, QLabel, QComboBox
@@ -13,8 +12,9 @@ from PIL.ImageQt import ImageQt
 from .exception_dialog import ExceptionDialog
 from .progress_bar_dialog import ProgressBarDialog
 from .upscale_dialog import UpscaleDialog
+from ..client import ImageAIUtilsClient
+from ..progress_thread import ProgressThread
 from ..utils import get_ui_file_path
-from ..client import ImageAIUtilsClient, WebSocketException
 
 
 class ImageSelectButton(QPushButton):
@@ -53,36 +53,7 @@ class DiffusionMode(int, Enum):
     TEXT_TO_IMAGE = 0
     IMAGE_TO_IMAGE = 1
     INPAINT = 2
-
-
-class DiffusionThread(QThread):
-    progress_signal = pyqtSignal(float)
-
-    def __init__(self, client_method: Callable, request_data: Dict[str, Any]):
-        super().__init__()
-        self._request_data = request_data
-        self._client_method = client_method
-        self.result_images = []
-        self.success = False
-        self.error_message = None
-
-    def run(self):
-        def progress_callback(progress: float):
-            self.progress_signal.emit(progress)
-
-        try:
-            self.result_images = self._client_method(
-                progress_callback=progress_callback, **self._request_data
-            )
-            self.success = True
-        except WebSocketException as e:
-            self.success = False
-            #ExceptionDialog(e.message).exec()
-            self.error_message = e.message
-        except Exception as e:
-            self.success = False
-            #ExceptionDialog(''.join(traceback.format_exception(type(e), e, e.__traceback__))).exec()
-            self.error_message = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+    MAKE_TILABLE = 3
 
 
 class DiffusionDialog(QDialog):
@@ -98,6 +69,10 @@ class DiffusionDialog(QDialog):
     strength_double_spin_box: QDoubleSpinBox
     number_of_variants_spin_box: QSpinBox
     scaling_mode_combo_box: QComboBox
+    border_width_label: QLabel
+    border_width_spin_box: QSpinBox
+    border_softness_label: QLabel
+    border_softness_double_spin_box: QDoubleSpinBox
 
     def __init__(self):
         super().__init__()
@@ -108,7 +83,8 @@ class DiffusionDialog(QDialog):
         self.upscale_dialog = UpscaleDialog()
         self.progress_bar_dialog = ProgressBarDialog()
         self._columns = 2  # TODO change dynamically
-        self._result_images = []
+        self._result_images: List[Image.Image] = []
+        self._result_mask: Optional[Image.Image] = None
         self._image_selection = []
         self._target_width = 512
         self._target_height = 512
@@ -150,7 +126,8 @@ class DiffusionDialog(QDialog):
         self.upscale_dialog.set_upscaling_params(
             source_image=self._result_images[selected_id],
             target_width=self._target_width,
-            target_height=self._target_height
+            target_height=self._target_height,
+            prompt=self.prompt_plain_text_edit.toPlainText()
         )
         if not self.upscale_dialog.exec():
             return
@@ -170,22 +147,28 @@ class DiffusionDialog(QDialog):
             'num_variants': self.number_of_variants_spin_box.value(),
             'scaling_mode': self.scaling_mode_combo_box.currentText()
         }
-        if not self.use_random_seed_check_box.isChecked:
+        if not self.use_random_seed_check_box.isChecked():
             request_data['seed'] = self.seed_spin_box.value()
 
         if self._mode == DiffusionMode.TEXT_TO_IMAGE:
             aspect_ratio = self._target_width / self._target_height
             request_data['aspect_ratio'] = aspect_ratio
-            thread = DiffusionThread(ImageAIUtilsClient.client().text_to_image, request_data)
+            thread = ProgressThread(ImageAIUtilsClient.client().text_to_image, request_data)
         elif self._mode == DiffusionMode.IMAGE_TO_IMAGE:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
-            thread = DiffusionThread(ImageAIUtilsClient.client().image_to_image, request_data)
+            thread = ProgressThread(ImageAIUtilsClient.client().image_to_image, request_data)
         elif self._mode == DiffusionMode.INPAINT:
             request_data['strength'] = self.strength_double_spin_box.value()
             request_data['source_image'] = self._source_image
             request_data['mask'] = self._mask
-            thread = DiffusionThread(ImageAIUtilsClient.client().inpaint, request_data)
+            thread = ProgressThread(ImageAIUtilsClient.client().inpaint, request_data)
+        elif self._mode == DiffusionMode.MAKE_TILABLE:
+            request_data['strength'] = self.strength_double_spin_box.value()
+            request_data['source_image'] = self._source_image
+            request_data['border_width'] = self.border_width_spin_box.value()
+            request_data['border_softness'] = self.border_softness_double_spin_box.value()
+            thread = ProgressThread(ImageAIUtilsClient.client().make_tilable, request_data)
         else:
             return
 
@@ -199,7 +182,10 @@ class DiffusionDialog(QDialog):
             ExceptionDialog(thread.error_message).exec()
             return
 
-        self._result_images = thread.result_images
+        if self._mode == DiffusionMode.MAKE_TILABLE:
+            self._result_images, self._result_mask = thread.result
+        else:
+            self._result_images = thread.result
 
         self._update_buttons()
 
@@ -215,13 +201,21 @@ class DiffusionDialog(QDialog):
         self._mode = mode
         self.strength_label.setVisible(mode != DiffusionMode.TEXT_TO_IMAGE)
         self.strength_double_spin_box.setVisible(mode != DiffusionMode.TEXT_TO_IMAGE)
+        self.border_width_label.setVisible(mode == DiffusionMode.MAKE_TILABLE)
+        self.border_width_spin_box.setVisible(mode == DiffusionMode.MAKE_TILABLE)
+        self.border_softness_label.setVisible(mode == DiffusionMode.MAKE_TILABLE)
+        self.border_softness_double_spin_box.setVisible(mode == DiffusionMode.MAKE_TILABLE)
 
     def set_target_size(self, width, height):
         self._target_width = width
         self._target_height = height
 
     @property
-    def result_images(self):
+    def result_images(self) -> List[Image.Image]:
         return [
             image for selected, image in zip(self._image_selection, self._result_images) if selected
         ]
+
+    @property
+    def result_mask(self) -> Optional[Image.Image]:
+        return self._result_mask
